@@ -1,0 +1,40 @@
+{{! Employee Footer Partial}}
+
+<table class="row footer">
+  <tr>
+    <td class="wrapper">
+
+      <table class="twelve columns">
+        <tr>
+          <td class="last text-right right-text-pad contact">
+            <h5>Contact</h5>
+            <p>Email: <a href="mailto:{{employee.company.email}}">{{employee.company.email}}</a></p>
+          </td>
+          <td class="expander"></td>
+        </tr>
+      </table>
+
+    </td>
+  </tr>
+</table>
+
+{{#if reason}}
+  <table class="row">
+    <tr>
+      <td class="wrapper last">
+      
+        <table class="twelve columns">
+          <tr>
+            <td align="center" class="reason-wrapper">
+              <center>
+                <p class="small" style="text-align:center;">You received this email because {{reason}}</p>
+              </center>
+            </td>
+            <td class="expander"></td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+{{/if}}

@@ -1,0 +1,45 @@
+#!/usr/bin/env node
+
+const cluster      = require('cluster'),
+      winston      = require('../lib/load/winston')(),
+      chalk        = require('chalk'),
+      os           = require('os'),
+      initializers = require('../lib/load/initializers'),
+      program      = require('commander'),
+      api          = require('..'),
+      maxWorkers   = process.env.MAX_WORKERS;
+
+// options
+program
+  .option('-H, --host <host>', 'specify the host [0.0.0.0]', '0.0.0.0')
+  .option('-p, --port <port>', 'specify the port [4000]', '4000')
+  .option('-b, --backlog <size>', 'specify the backlog size [511]', '511')
+  .option('-r, --ratelimit <n>', 'ratelimit requests [2500]', '2500')
+  .option('-d, --ratelimit-duration <ms>', 'ratelimit duration [1h]', '1h')
+  .parse(process.argv);
+
+if ( cluster.isMaster ) {
+  var workers = [];
+
+  let boot = wi => {
+    workers[wi] = cluster.fork();
+    workers[wi].on('exit', () => {
+      winston.error(chalk.bgRed('Worker died. :( RIP Worker', wi, '. Rebooting...'));
+      boot(wi);
+    });
+  };
+
+  os.cpus().forEach((c, i) => !maxWorkers || i < maxWorkers ? boot(i) : null);
+
+  initializers.load();
+} else {
+  // create app
+  let app = api({
+    ratelimit: Math.floor(program.ratelimit),
+    duration: Math.floor(program.ratelimitDuration)
+  });
+  // listen
+  let port = process.env.PORT || program.port;
+  app.listen(port, program.host, Math.floor(program.backlog));
+  winston.debug(chalk.dim('[' + cluster.worker.id + ']', 'Worker listening on', program.host + ':' + port));
+}

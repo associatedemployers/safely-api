@@ -1,0 +1,41 @@
+{{! Company Footer Partial}}
+
+<table class="row footer">
+  <tr>
+    <td class="wrapper">
+
+      <table class="twelve columns">
+        <tr>
+          <td class="last text-right right-text-pad contact">
+            <h5>Contact</h5>
+            <p>Call: <a href="tel:4062486178">(406) 248-6178</a></p>
+            <p>Email: <a href="mailto:trust@aehr.org">support@granitehr.com</a></p>
+          </td>
+          <td class="expander"></td>
+        </tr>
+      </table>
+
+    </td>
+  </tr>
+</table>
+
+{{#if reason}}
+  <table class="row">
+    <tr>
+      <td class="wrapper last">
+
+        <table class="twelve columns">
+          <tr>
+            <td align="center" class="reason-wrapper">
+              <center>
+                <p class="small" style="text-align:center;">You received this email because {{reason}}</p>
+              </center>
+            </td>
+            <td class="expander"></td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+{{/if}}

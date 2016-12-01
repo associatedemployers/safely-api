@@ -1,0 +1,13 @@
+{
+  "services": [{
+    "name": "slate",
+    "intentUri": "http://localhost:3000/api/integrations",
+    "authUri": "http://localhost:4201/login",
+    "apiBasePath": "http://localhost:3000"
+  }, {
+    "name": "test",
+    "intentUri": "http://localhost:4002/integration",
+    "authUri": "http://mytest.com",
+    "apiBasePath": "http://localhost:4002"
+  }]
+}

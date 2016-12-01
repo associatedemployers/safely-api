@@ -1,0 +1,6 @@
+{
+  "name": "classes",
+  "description": "class resource endpoint",
+  "secure": true,
+  "ops": "r"
+}

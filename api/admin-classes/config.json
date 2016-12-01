@@ -1,0 +1,9 @@
+{
+  "name": "classes",
+  "description": "class administrative resource endpoint",
+  "secure": true,
+  "authorizationOptions": {
+    "administrative": true
+  },
+  "ops": "cud"
+}

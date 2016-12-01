@@ -1,0 +1,8 @@
+node_modules
+.DS_Store
+
+npm-debug.log
+tmp
+uploads
+config/aws.json
+config/braintree.json
