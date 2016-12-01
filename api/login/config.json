@@ -1,0 +1,8 @@
+{
+  "name": "grant service",
+  "description": "service that grants tokens to clients",
+  "routes": {
+    "POST /login": "login",
+    "POST /grant/:id/refresh": "refreshGrant"
+  }
+}

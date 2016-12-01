@@ -1,0 +1,6 @@
+{
+  "name": "users",
+  "description": "user resource endpoint",
+  "ops": "crud",
+  "secure": true
+}
