@@ -6,3 +6,4 @@ tmp
 uploads
 config/aws.json
 config/braintree.json
+utils
