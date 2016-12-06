@@ -1,0 +1,9 @@
+{
+  "name": "seats",
+  "description": "seats resource endpoint",
+  "ops": "crud",
+  "secure": true,
+  "authorizationOptions": {
+    "administrative": true
+  }
+}

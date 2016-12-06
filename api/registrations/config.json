@@ -1,0 +1,6 @@
+{
+  "name": "registrations",
+  "description": "registrations resource endpoint",
+  "ops": "crud",
+  "secure": true
+}
