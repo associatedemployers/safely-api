@@ -1,0 +1,8 @@
+{
+  "name": "availability",
+  "description": "availability api endpoint",
+  "secure": true,
+  "routes": {
+    "GET /availability": "getAvailability"
+  }
+}
