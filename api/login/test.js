@@ -4,7 +4,7 @@ const chai     = require('chai'),
       mongoose = require('mongoose'),
       moment   = require('moment'),
       api      = require('../..'),
-      User     = require('../../lib/models/company-user'),
+      User     = require('../../lib/models/user'),
       Grant    = require('../../lib/models/grant');
 
 [ require('chai-http') ].map(plugin => chai.use(plugin));
@@ -29,20 +29,7 @@ describe('Acceptance :: Route :: Authentication', () => {
     user.save().then(() => done()).catch(done);
   });
 
-  describe('GET /login/:type', () => {
-    it('should respond with 400 when requesting invalid type', done => {
-      var app = api();
-
-      chai.request(app.listen())
-      .post('/api/v1/login/bleh')
-      .then(res => {
-        done(res);
-      })
-      .catch(res => {
-        expect(res).to.have.status(400);
-        done();
-      });
-    });
+  describe('GET /login', () => {
 
     it('should respond with 400 without password or email', done => {
       var app = api().listen();

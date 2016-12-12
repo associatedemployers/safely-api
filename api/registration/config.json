@@ -1,0 +1,6 @@
+{
+  "name": "registration",
+  "description": "registration utilities endpoint",
+  "secure": true,
+  "ops": "rud"
+}

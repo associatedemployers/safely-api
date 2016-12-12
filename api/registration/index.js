@@ -1,0 +1,3 @@
+exports.getRegistration = function* (){ 
+
+};

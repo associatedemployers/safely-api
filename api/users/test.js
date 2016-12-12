@@ -2,7 +2,7 @@ const chai        = require('chai'),
       expect      = chai.expect,
       Promise     = require('bluebird'),
       api         = require('../..'),
-      CompanyUser = require('../../lib/models/company-user'),
+      CompanyUser = require('../../lib/models/user'),
       makeUser = require('../../lib/test-support/make-user');
 
 [ require('chai-http') ].map(plugin => chai.use(plugin));
