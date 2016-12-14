@@ -1,0 +1,6 @@
+{
+  "name": "trainees",
+  "description": "trainee resource endpoint",
+  "secure": true,
+  "ops": "crud"
+}
