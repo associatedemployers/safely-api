@@ -1,0 +1,6 @@
+{
+  "name": "companies",
+  "description": "company resource endpoint",
+  "secure": true,
+  "ops": "crud"
+}

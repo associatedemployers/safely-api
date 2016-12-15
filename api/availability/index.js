@@ -38,7 +38,7 @@ let findBlocks = time => AvailableTime.find({
 .reduce((b, t) => b.concat(t.blocks), []);
 
 exports.getAvailability = function*() {
-  const { month, year } = this.request.body;
+  const { month, year, showBackdate } = this.request.body;
 
   let startFrom     = moment().month(parseFloat(month) - 1).year(year).startOf('month').startOf('day'),
       weeks         = [],
@@ -55,18 +55,19 @@ exports.getAvailability = function*() {
 
   let filterBlocks = (day, blocks) => {
     return Promise.reduce(blocks, (availableBlocks, block) => {
+      let s = moment(day).hour(block[0]).startOf('hour').toDate();
+
+      if ( !showBackdate && moment().add(1, 'hour').isAfter(s) ) {
+        return availableBlocks;
+      }
+
       if ( _.find(blackouts, blackout => day.hour(block[0]).isBetween(blackout.start, blackout.end, null, '[]')) ) {
         return availableBlocks;
       }
 
-      let s = moment(day).hour(block[0]).startOf('hour').toDate();
-
       return Seat.countAvailableSeats(s, moment(s).add(1, 'hour').endOf('hour'))
       .then(seats => {
-        if ( seats ) {
-          availableBlocks.push(block.concat([{ seats }]));
-        }
-
+        availableBlocks.push(block.concat([{ seats }]));
         return availableBlocks;
       });
     }, []);

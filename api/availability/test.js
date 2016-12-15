@@ -53,12 +53,13 @@ describe('Acceptance :: Routes :: availability', () => {
       .set('X-Test-User', testKey)
       .query({
         month: 12,
-        year: 2016
+        year: 2016,
+        showBackdate: true
       });
 
       expect(res).to.have.status(200);
       expect(res.body.availability).to.have.lengthOf(5);
-      console.dir(res.body.availability, { depth: 10 });
+
       let s = { seats: 1 };
 
       res.body.availability.forEach((a, wi) => {
