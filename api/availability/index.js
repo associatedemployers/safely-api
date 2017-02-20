@@ -50,8 +50,19 @@ exports.getAvailability = function*() {
       start: { $gte: lookbackStart, $lte: lookbackEnd }
     }, {
       end: { $gte: lookbackStart, $lte: lookbackEnd }
-    }]
+    }],
+    'classExceptions.0': { $exists: false }
   }).lean().exec();
+
+  const findClassBlackout = (blockDate, block) => {
+    return BlackoutDate.find({
+      start: { $lte: blockDate },
+      end: { $gte: blockDate },
+      blocks: { $in: [ block ] }
+    })
+    .populate('classExceptions')
+    .then(classBlackouts => _.concat.apply(this, _.map(classBlackouts, 'classExceptions')));
+  };
 
   let filterBlocks = (day, blocks) => {
     return Promise.reduce(blocks, (availableBlocks, block) => {
@@ -67,8 +78,17 @@ exports.getAvailability = function*() {
 
       return Seat.countAvailableSeats(s, moment(s).add(1, 'hour').endOf('hour'))
       .then(seats => {
-        availableBlocks.push(block.concat([{ seats }]));
-        return availableBlocks;
+        return findClassBlackout(s, block)
+        .then(onlyClasses => {
+          let _block = block.concat([{ seats }]);
+
+          if (onlyClasses.length > 0) {
+            _block[_block.length - 1].onlyClasses = onlyClasses;
+          }
+
+          availableBlocks.push(_block);
+          return availableBlocks;
+        });
       });
     }, []);
   };
