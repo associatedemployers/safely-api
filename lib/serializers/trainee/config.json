@@ -1,6 +1,10 @@
 {
-  "table": "",
+  "table": "People.People",
+  "primaryKey": "PersonID",
   "values": {
-
+    "name.first": "FirstName",
+    "name.middle": "MiddleName",
+    "name.last": "LastName",
+    "ssn": "SSN"
   }
 }

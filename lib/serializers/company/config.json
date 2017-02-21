@@ -1,0 +1,8 @@
+{
+  "table": "Members.Member",
+  "primaryKey": "MemberID",
+  "newRecordQuery": "select * from Member.Members where SafelyID is null and [MSSC Member]=1",
+  "values": {
+    "name": "Name"
+  }
+}

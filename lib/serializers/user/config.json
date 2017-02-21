@@ -1,0 +1,8 @@
+{
+  "table": "Members.Member",
+  "primaryKey": "MemberID",
+  "newRecordQuery": "select Member.People.*, Member.Members.[MSSC Member] from Member.People left join Member.Members on Member.People.MemberID = Member.Members.MemberID where Member.People.SafelyID is null and Member.Members.[MSSC Member]=1",
+  "values": {
+    "name": "Name"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "table": "Training.Courses",
+  "primaryKey": "CourseID",
+  "values": {
+    "name": "Name",
+    "hours": "ClassHours",
+    "created": "ModifiedDate",
+    "description": "Description"
+  }
+}
