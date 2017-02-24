@@ -1,8 +1,9 @@
 {
-  "table": "Members.Member",
+  "table": "Safely.CompanyProfiles",
   "primaryKey": "MemberID",
-  "newRecordQuery": "select * from Member.Members where SafelyID is null and [MSSC Member]=1",
+  "discoveryQuery": "select Safely.CompanyProfiles.*, Member.Members.Name, Member.Members.[Company E-Mail] from Safely.CompanyProfiles left join Member.Members on Safely.CompanyProfiles.MemberID = Member.Members.MemberID where Safely.CompanyProfiles.SafelyID is null",
   "values": {
-    "name": "Name"
+    "name": "Name",
+    "email": "Company E-Mail"
   }
 }

@@ -1,10 +1,15 @@
 {
-  "table": "People.People",
-  "primaryKey": "PersonID",
+  "table": "Person.Person",
+  "primaryKey": "BusinessEntityID",
   "values": {
-    "name.first": "FirstName",
-    "name.middle": "MiddleName",
-    "name.last": "LastName",
-    "ssn": "SSN"
-  }
+    "ssn": "SocialSecurity",
+    "email": "NotificationEmail"
+  },
+  "onlyInclude": [
+    "FirstName",
+    "MiddleName",
+    "LastName",
+    "SocialSecurity",
+    "SafelyID"
+  ]
 }

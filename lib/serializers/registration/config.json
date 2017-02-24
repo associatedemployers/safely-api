@@ -1,0 +1,12 @@
+{
+  "table": "Safely.Registrations",
+  "primaryKey": "RegistrationHeaderID",
+  "values": {
+    "start": "RegistrationDate",
+    "cancelledOn": "CancelledOn"
+  },
+  "onlyInclude": [
+    "RegistrationDate",
+    "CancelledOn"
+  ]
+}

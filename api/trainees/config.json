@@ -2,5 +2,10 @@
   "name": "trainees",
   "description": "trainee resource endpoint",
   "secure": true,
-  "ops": "crud"
+  "ops": "crud",
+  "crudOptions": {
+    "all": {
+      "forceCompanyQueryMerge": false
+    }
+  }
 }
