@@ -1,0 +1,11 @@
+{
+  "admins": [{
+    "email": "james@aehr.org",
+    "firstName": "James",
+    "lastName": "Collins"
+  }, {
+    "email": "jscott@aehr.org",
+    "firstName": "J Scott",
+    "lastName": "Chapman"
+  }]
+}

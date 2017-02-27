@@ -1,0 +1,8 @@
+{
+  "name": "activation",
+  "description": "user activation api endpoint",
+  "routes": {
+    "GET /user/:id/activation-status": "getActivationStatus",
+    "POST /user/:id/activate": "activate"
+  }
+}
