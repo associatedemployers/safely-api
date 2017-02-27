@@ -1,0 +1,132 @@
+<!-- <style> -->
+<table class="body">
+  <tr>
+    <td class="float-center" align="center" valign="top">
+      <center data-parsed="">
+        <table class="spacer float-center">
+          <tbody>
+            <tr>
+              <td height="16px" style="font-size:16px;line-height:16px;">&#xA0;</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table align="center" class="container float-center">
+          <tbody>
+            <tr>
+              <td>
+                <table class="spacer">
+                  <tbody>
+                    <tr>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <table class="row">
+                  <tbody>
+                    <tr>
+                      <th class="small-12 large-12 columns first last">
+                        <h3>
+                          <strong>{{registration.company.name}}</strong><br /> has registered you for training
+                          {{#if multiDay}}
+                            {{start}} through {{end}}.
+                          {{else}}
+                            on {{start}}.
+                          {{/if}}
+                        </h3>
+                      </th>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <table class="spacer">
+                  <tbody>
+                    <tr>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <table class="row">
+                  <tbody>
+                    <tr class="small-12 large-12 columns first last">
+                      <td><h5>You are scheduled for the following courses:</h5></td>
+                    </tr>
+                    <tr class="small-12 large-12 columns first last">
+                      <td>
+                        <ul>
+                          {{#each registration.classes as |course|}}
+                            <li><strong>{{course.name}}</strong> - {{course.hours}}hrs</li>
+                          {{/each}}
+                        </ul>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <hr />
+
+                <table class="row">
+                  <tbody>
+                    <tr class="small-12 large-12 columns first last">
+                      <td>
+                        <h4>When should I arrive?</h4>
+                        <p>30mins prior to your scheduled start time. ({{start}})</p>
+                      </td>
+                    </tr>
+                    <tr class="small-12 large-12 columns first last">
+                      <td>
+                        <h4>Where do I go?</h4>
+                        <p><strong>Arrive at:</strong></p>
+                        <p>2727 Central Ave.,<br/>Suite 2</br>Billings, MT 59102</p>
+                        <p><strong>From the rear parking lot:</strong></p>
+                        <p>Enter the building and walk down the hallway. Our labs are on the left across from the bathrooms. You should see our name on the door, "Montana Safety Services Counsel".</p>
+                      </td>
+                    </tr>
+                    <tr class="small-12 large-12 columns first last">
+                      <td>
+                        <h4>What should I bring?</h4>
+                        <p><strong>What's <i>not</i> allowed in the lab:</strong></p>
+                        <ul>
+                          <li>Cell Phones</li>
+                          <li>Notes &amp; Note Taking</li>
+                          <li>Drinks &amp; Food</li>
+                          <li>Tobacco Products</li>
+                        </ul>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+
+                <table class="row collapsed footer">
+                  <tbody>
+                    <tr>
+                      <th class="small-12 large-12 columns first last">
+                        <table>
+                          <tr>
+                            <th>
+                              <table class="spacer">
+                                <tbody>
+                                  <tr>
+                                    <td height="16px" style="font-size:16px;line-height:16px;">&#xA0;</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                              <p class="text-center">&copy; Montana Safety Services Counsel</p>
+                            </th>
+                            <th class="expander"></th>
+                          </tr>
+                        </table>
+                      </th>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </center>
+    </td>
+  </tr>
+</table>

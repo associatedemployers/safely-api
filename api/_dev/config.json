@@ -1,0 +1,7 @@
+{
+  "name": "_dev",
+  "description": "development api endpoint",
+  "routes": {
+    "POST /_dev/template/:name": "testEmail"
+  }
+}

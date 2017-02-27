@@ -2,5 +2,12 @@
   "name": "registrations",
   "description": "registrations resource endpoint",
   "ops": "crud",
-  "secure": true
+  "secure": true,
+  "crudOptions": {
+    "all": {
+      "toObjectOptions": {
+        "depopulate": true
+      }
+    }
+  }
 }
