@@ -7,7 +7,7 @@ const cluster      = require('cluster'),
       initializers = require('../lib/load/initializers'),
       program      = require('commander'),
       api          = require('..'),
-      maxWorkers   = process.env.MAX_WORKERS;
+      maxWorkers   = parseFloat(process.env.MAX_WORKERS);
 
 // options
 program
