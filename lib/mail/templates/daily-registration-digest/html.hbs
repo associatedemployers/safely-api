@@ -8,16 +8,6 @@
           <tbody>
             <tr>
               <td>
-                <table class="row">
-                  <tbody>
-                    <tr>
-                      <th class="small-12 large-12 columns first last">
-                        <h3>Welcome to Safely!</h3>
-                      </th>
-                    </tr>
-                  </tbody>
-                </table>
-
                 <table class="spacer">
                   <tbody>
                     <tr>
@@ -28,33 +18,30 @@
 
                 <table class="row">
                   <tbody>
-                    <tr>
-                      <th class="small-12 large-12 columns first last">
-                        <table>
-                          <tr>
-                            <th>
-                              <p class="text-center">This is some text that welcomes you to safely and explains what safely is. Welcome welcome welcome. Blah blah blah. Book registrants quick, get availability instantly.</p>
-                              <center data-parsed="">
-                                <table class="button success float-center">
-                                  <tr>
-                                    <td>
-                                      <table>
-                                        <tr>
-                                          <td><a href="http://lab.mssc.org/activate/{{user._id}}">Activate Your Account</a></td>
-                                        </tr>
-                                      </table>
-                                    </td>
-                                  </tr>
-                                </table>
-                              </center>
-                            </th>
-                            <th class="expander"></th>
-                          </tr>
-                        </table>
-                      </th>
+                    <tr class="small-12 large-12 columns first last">
+                      <td><h5>The following registrations were made today:</h5></td>
+                    </tr>
+                    <tr class="small-12 large-12 columns first last">
+                      <td>
+                        <ul>
+                          {{#each registrations as |reg|}}
+                            <li>
+                              <strong>{{reg.trainee.name.first}} {{reg.trainee.name.last}}</strong>:<br />
+                              {{reg.startStr}} - {{reg.endStr}}
+                              <br />
+                              <ul>
+                                {{#each reg.classes as |course|}}
+                                  <li>{{course.name}} - {{course.hours}}hrs</li>
+                                {{/each}}
+                              </ul>
+                            </li>
+                          {{/each}}
+                        </ul>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
+
                 <table class="row collapsed footer">
                   <tbody>
                     <tr>
