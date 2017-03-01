@@ -1,0 +1,14 @@
+{
+  "name": "available_time",
+  "description": "available time administrative resource endpoint",
+  "secure": true,
+  "authorizationOptions": {
+    "administrative": true
+  },
+  "ops": "crud",
+  "crudOptions": {
+    "update": {
+      "explicitKeys": [ "blocks", "days" ]
+    }
+  }
+}
