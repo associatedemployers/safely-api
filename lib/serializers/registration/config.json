@@ -3,10 +3,12 @@
   "primaryKey": "RegistrationHeaderID",
   "values": {
     "start": "RegistrationDate",
-    "cancelledOn": "CancelledOn"
+    "cancelledOn": "CancelledOn",
+    "comments": "Comment"
   },
   "onlyInclude": [
     "RegistrationDate",
-    "CancelledOn"
+    "CancelledOn",
+    "Comment"
   ]
 }
