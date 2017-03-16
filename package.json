@@ -1,6 +1,6 @@
 {
   "name": "safely-api",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "repository": "associatedemployers/safely-api",
   "description": "API Service for Safely",
   "scripts": {
