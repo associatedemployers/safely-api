@@ -2,5 +2,11 @@
   "name": "classes",
   "description": "class resource endpoint",
   "secure": true,
-  "ops": "r"
+  "ops": "r",
+  "crudOptions": {
+    "all": {
+      "forceCompanyQueryMerge": false
+    }
+  }
+
 }
