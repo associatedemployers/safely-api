@@ -20,6 +20,12 @@ exports.login = function* () {
     return;
   }
 
+  if (!user.activatedOn) {
+    this.status = 400;
+    this.body = 'This user has not been activated.';
+    return;
+  }
+
   if ( yield user.compareHash(password) ) {
     let grant = yield Grant.grant(user);
     this.status = 200;
