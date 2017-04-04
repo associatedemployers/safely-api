@@ -68,7 +68,7 @@ exports.getAvailability = function*() {
     return Promise.reduce(blocks, (availableBlocks, block) => {
       let s = moment(day).hour(block[0]).startOf('hour').toDate();
 
-      if ( !showBackdate && moment().add(1, 'hour').isAfter(s) ) {
+      if ( !showBackdate && moment().isAfter(s) ) {
         return availableBlocks;
       }
 
