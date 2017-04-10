@@ -4,10 +4,12 @@
 
 const moment        = require('moment'),
       Promise       = require('bluebird'),
-      _             = require('lodash'),
       BlackoutDate  = require('../../lib/models/blackout-date'),
       AvailableTime = require('../../lib/models/available-time'),
-      Seat          = require('../../lib/models/seat');
+      Seat          = require('../../lib/models/seat'),
+      find          = require('lodash/find'),
+      map           = require('lodash/map'),
+      concat        = require('lodash/concat');
 
 function getWeekNums (momentObj) {
   var clonedMoment = moment(momentObj),
@@ -61,7 +63,10 @@ exports.getAvailability = function*() {
       blocks: { $in: [ block ] }
     })
     .populate('classExceptions')
-    .then(classBlackouts => _.concat.apply(this, _.map(classBlackouts, 'classExceptions')));
+    .then(classBlackouts => ({
+      classBlackouts,
+      exceptions: concat.apply(this, map(classBlackouts, 'classExceptions'))
+    }));
   };
 
   let filterBlocks = (day, blocks) => {
@@ -72,18 +77,21 @@ exports.getAvailability = function*() {
         return availableBlocks;
       }
 
-      if ( _.find(blackouts, blackout => day.hour(block[0]).isBetween(blackout.start, blackout.end, null, '[]')) ) {
+      if ( find(blackouts, blackout => day.hour(block[0]).isBetween(blackout.start, blackout.end, null, '[]')) ) {
         return availableBlocks;
       }
 
       return Seat.countAvailableSeats(s, moment(s).add(1, 'hour').endOf('hour'))
       .then(seats => {
         return findClassBlackout(s, block)
-        .then(onlyClasses => {
+        .then(result => {
           let _block = block.concat([{ seats }]);
 
-          if (onlyClasses.length > 0) {
-            _block[_block.length - 1].onlyClasses = onlyClasses;
+          if (result.exceptions.length > 0) {
+            Object.assign(_block[_block.length - 1], {
+              onlyClasses: result.exceptions,
+              reduceSeats: (find(result.classBlackouts, b => !!b.seats) || {}).seats
+            });
           }
 
           availableBlocks.push(_block);
