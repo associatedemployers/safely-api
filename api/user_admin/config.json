@@ -1,0 +1,8 @@
+{
+  "name": "activation",
+  "description": "user util api endpoint",
+  "secure": true,
+  "routes": {
+    "POST /user/:id/send-activation-email": "activationEmail"
+  }
+}
