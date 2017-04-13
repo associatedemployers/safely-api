@@ -105,6 +105,7 @@ exports.getAvailability = function*() {
                 classes: { $all: map(reduction.classBlackouts, '_id') }
               }).then(registrations => {
                 Object.assign(_block[_block.length - 1], {
+                  registrations,
                   onlyClasses: result.exceptions,
                   reduceSeats: reduction.seats - registrations
                 });
