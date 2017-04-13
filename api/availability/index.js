@@ -6,6 +6,7 @@ const moment        = require('moment'),
       Promise       = require('bluebird'),
       BlackoutDate  = require('../../lib/models/blackout-date'),
       AvailableTime = require('../../lib/models/available-time'),
+      Registration  = require('../../lib/models/registration'),
       Seat          = require('../../lib/models/seat'),
       find          = require('lodash/find'),
       map           = require('lodash/map'),
@@ -65,7 +66,7 @@ exports.getAvailability = function*() {
     .populate('classExceptions')
     .then(classBlackouts => ({
       classBlackouts,
-      exceptions: concat.apply(this, map(classBlackouts, 'classExceptions'))
+      exceptions: concat.apply(this, map(classBlackouts, blk => blk.toObject().classExceptions))
     }));
   };
 
@@ -81,17 +82,41 @@ exports.getAvailability = function*() {
         return availableBlocks;
       }
 
-      return Seat.countAvailableSeats(s, moment(s).add(1, 'hour').endOf('hour'))
+      let end = moment(s).add(1, 'hour').endOf('hour');
+
+      return Seat.countAvailableSeats(s, end)
       .then(seats => {
         return findClassBlackout(s, block)
         .then(result => {
           let _block = block.concat([{ seats }]);
 
           if (result.exceptions.length > 0) {
-            Object.assign(_block[_block.length - 1], {
-              onlyClasses: result.exceptions,
-              reduceSeats: (find(result.classBlackouts, b => !!b.seats) || {}).seats
-            });
+            const reduction = find(result.classBlackouts, b => !!b.seats);
+
+            if (reduction) {
+              return Registration.count({
+                $or: [{
+                  cancelledOn: null
+                }, {
+                  cancelledOn: { $exists: false }
+                }],
+                'times.start': { $lte: s },
+                'times.end': { $gte: end },
+                classes: { $all: map(reduction.classBlackouts, '_id') }
+              }).then(registrations => {
+                Object.assign(_block[_block.length - 1], {
+                  onlyClasses: result.exceptions,
+                  reduceSeats: reduction.seats - registrations
+                });
+
+                availableBlocks.push(_block);
+                return availableBlocks;
+              });
+            } else {
+              Object.assign(_block[_block.length - 1], {
+                onlyClasses: result.exceptions
+              });
+            }
           }
 
           availableBlocks.push(_block);
