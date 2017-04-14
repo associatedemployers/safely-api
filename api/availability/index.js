@@ -4,6 +4,7 @@
 
 const moment        = require('moment'),
       Promise       = require('bluebird'),
+      winston       = require('winston'),
       BlackoutDate  = require('../../lib/models/blackout-date'),
       AvailableTime = require('../../lib/models/available-time'),
       Registration  = require('../../lib/models/registration'),
