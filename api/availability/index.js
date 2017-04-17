@@ -103,9 +103,8 @@ exports.getAvailability = function*() {
                 }],
                 'times.start': { $lte: s },
                 'times.end': { $gte: end },
-                classes: { $all: map(reduction.classBlackouts, '_id') }
+                classes: { $in: map(reduction.classExceptions, '_id') }
               }).then(registrations => {
-                winston.log('counted', registrations, 'registrations');
                 Object.assign(_block[_block.length - 1], {
                   registrations,
                   onlyClasses: result.exceptions,
