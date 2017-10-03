@@ -1,6 +1,7 @@
 {
   "table": "Person.Person",
   "primaryKey": "BusinessEntityID",
+  "twoWaySync": true,
   "values": {
     "ssn": "SocialSecurity",
     "email": "NotificationEmail"
