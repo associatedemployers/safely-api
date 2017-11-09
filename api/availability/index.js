@@ -4,7 +4,6 @@
 
 const moment        = require('moment'),
       Promise       = require('bluebird'),
-      winston       = require('winston'),
       BlackoutDate  = require('../../lib/models/blackout-date'),
       AvailableTime = require('../../lib/models/available-time'),
       Registration  = require('../../lib/models/registration'),
@@ -15,15 +14,10 @@ const moment        = require('moment'),
 
 function getWeekNums (momentObj) {
   var clonedMoment = moment(momentObj),
-      first = clonedMoment.startOf('month').week(),
-      last = clonedMoment.endOf('month').week();
+      start = clonedMoment.startOf('month').toDate(),
+      end = clonedMoment.endOf('month').toDate();
 
-  // In case last week is in next year
-  if ( first > last) {
-    last = first + last;
-  }
-
-  return last - first + 1;
+  return moment.duration(end - start).weeks() + 1;
 }
 
 let findBlocks = time => AvailableTime.find({
