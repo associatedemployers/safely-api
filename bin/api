@@ -9,6 +9,17 @@ const cluster      = require('cluster'),
       api          = require('..'),
       maxWorkers   = parseFloat(process.env.MAX_WORKERS);
 
+// Initialize Opbeat
+if (process.env.NODE_ENV === 'production' && process.env.OPBEAT_DISABLED !== 'true') {
+  require('opbeat').start({
+    appId:          process.env.OPBEAT_ID,
+    organizationId: process.env.OPBEAT_ORGID,
+    secretToken:    process.env.OPBEAT_SECRET
+  });
+
+  winston.debug('Opbeat operational.');
+}
+
 // options
 program
   .option('-H, --host <host>', 'specify the host [0.0.0.0]', '0.0.0.0')

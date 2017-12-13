@@ -19,14 +19,6 @@ var responseTime = require('koa-response-time'),
 
 const env = process.env.NODE_ENV || 'development';
 
-if (env === 'production' && process.env.OPBEAT_DISABLED !== 'true') {
-  require('opbeat').start({
-    appId:          process.env.OPBEAT_ID,
-    organizationId: process.env.OPBEAT_ORGID,
-    secretToken:    process.env.OPBEAT_SECRET
-  });
-}
-
 /**
  * Initialize an app with the given `opts`.
  *
