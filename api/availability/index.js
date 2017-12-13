@@ -16,7 +16,7 @@ const moment        = require('moment'),
 
 const cache = lruCache({
   max: 10,
-  maxAge: 1000 * 10
+  maxAge: 1000 * 20
 });
 
 function getWeekNums (momentObj) {
