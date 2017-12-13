@@ -4,20 +4,27 @@
 
 const moment        = require('moment'),
       Promise       = require('bluebird'),
+      lruCache      = require('lru-cache'),
       BlackoutDate  = require('../../lib/models/blackout-date'),
       AvailableTime = require('../../lib/models/available-time'),
       Registration  = require('../../lib/models/registration'),
       Seat          = require('../../lib/models/seat'),
       find          = require('lodash/find'),
       map           = require('lodash/map'),
-      concat        = require('lodash/concat');
+      concat        = require('lodash/concat'),
+      range         = require('lodash/range');
+
+const cache = lruCache({
+  max: 10,
+  maxAge: 1000 * 10
+});
 
 function getWeekNums (momentObj) {
   var clonedMoment = moment(momentObj),
       start = clonedMoment.startOf('month').toDate(),
       end = clonedMoment.endOf('month').toDate();
 
-  return moment.duration(end - start).weeks() + 1;
+  return moment.duration(end - start).weeks();
 }
 
 let findBlocks = time => AvailableTime.find({
@@ -36,10 +43,19 @@ let findBlocks = time => AvailableTime.find({
 .reduce((b, t) => b.concat(t.blocks), []);
 
 exports.getAvailability = function*() {
+  // Check the cache...
+  const cacheKey = JSON.stringify(this.request.body),
+        isCached = cache.peek(cacheKey);
+
+  if (isCached) {
+    this.status = 200;
+    this.body = JSON.parse(isCached);
+    return;
+  }
+
   const { month, year, showBackdate } = this.request.body;
 
   let startFrom     = moment().month(parseFloat(month) - 1).year(year).startOf('month').startOf('day'),
-      weeks         = [],
       lookbackStart = moment(startFrom).startOf('week').toDate(),
       lookbackEnd   = moment(startFrom).endOf('month').endOf('week').toDate();
 
@@ -66,15 +82,15 @@ exports.getAvailability = function*() {
   };
 
   let filterBlocks = (day, blocks) => {
-    return Promise.reduce(blocks, (availableBlocks, block) => {
+    return Promise.map(blocks, (block) => {
       let s = moment(day).hour(block[0]).startOf('hour').toDate();
 
-      if ( !showBackdate && moment().isAfter(s) ) {
-        return availableBlocks;
+      if (!showBackdate && moment().isAfter(s)) {
+        return null;
       }
 
-      if ( find(blackouts, blackout => day.hour(block[0]).isBetween(blackout.start, blackout.end, null, '[]')) ) {
-        return availableBlocks;
+      if (find(blackouts, blackout => day.hour(block[0]).isBetween(blackout.start, blackout.end, null, '[]'))) {
+        return null;
       }
 
       let end = moment(s).add(1, 'hour').endOf('hour');
@@ -105,8 +121,7 @@ exports.getAvailability = function*() {
                   reduceSeats: reduction.seats - registrations
                 });
 
-                availableBlocks.push(_block);
-                return availableBlocks;
+                return _block;
               });
             } else {
               Object.assign(_block[_block.length - 1], {
@@ -115,28 +130,27 @@ exports.getAvailability = function*() {
             }
           }
 
-          availableBlocks.push(_block);
-          return availableBlocks;
+          return _block;
         });
       });
-    }, []);
+    })
+    .filter(b => b !== null);
   };
 
-  for (let i = 0; i < getWeekNums(startFrom); i++) {
-    let week = [];
+  const body = {
+    availability: yield range(getWeekNums(startFrom) + 1).map(w => {
+      return Promise.reduce(range(7), (week, di) => {
+        let day = moment(startFrom).add(w, 'week').day(di);
 
-    for (let di = 0; di < 7; di++) {
-      let day = moment(startFrom).add(i, 'week').day(di),
-          blocks = yield findBlocks(day);
+        return findBlocks(day)
+        .then(blocks => filterBlocks(day, blocks))
+        .then(fb => [ ...week, fb ]);
+      }, []);
+    })
+  };
 
-      week.push(yield filterBlocks(day, blocks));
-    }
-
-    weeks.push(week);
-  }
+  cache.set(cacheKey, JSON.stringify(body));
 
   this.status = 200;
-  this.body = {
-    availability: weeks
-  };
+  this.body = body;
 };
