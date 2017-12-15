@@ -4,7 +4,7 @@
   "repository": "associatedemployers/safely-api",
   "description": "API Service for Safely",
   "scripts": {
-    "start": "RUN_TASKS=false AWS_BUCKET=safely-dev SIGNATURE=test ALLOW_EMAILS=false bin/api",
+    "start": "RUN_TASKS=true AWS_BUCKET=safely-dev SIGNATURE=test ALLOW_EMAILS=false bin/api",
     "watch": "NODE_ENV=dev RUN_TASKS=true AWS_BUCKET=safely-dev ALLOW_EMAILS=false nodemon bin/api",
     "test": "NODE_ENV=test AWS_BUCKET=safely-test mocha -R spec --harmony api/*/test.js lib/models/*/test.js lib/test-support/*/test.js lib/models/plugins/*/test.js",
     "test-watch": "NODE_ENV=test AWS_BUCKET=safely-test mocha -R spec --harmony --watch api/*/test.js lib/models/*/test.js lib/test-support/*/test.js lib/models/plugins/*/test.js"
