@@ -13,12 +13,12 @@ chai.request.addPromises(Promise);
 describe('Acceptance :: Route :: Trainee', () => {
   let testKey;
 
-  beforeEach(function*() {
+  before(function*() {
     api();
     testKey = (yield makeUser())._id.toString();
   });
 
-  afterEach(function*() {
+  after(function*() {
     yield require('mongoose').connection.dropDatabase();
   });
 
@@ -31,14 +31,14 @@ describe('Acceptance :: Route :: Trainee', () => {
         last: 'Ross'
       },
       email: 'happytree@hotmail.net',
-      ssn: '123-12-1234'
+      ssn: '123-12-1111'
     })).save();
 
     let res = yield chai.request(app)
       .get('/api/v1/trainees')
       .set('X-Test-User', testKey)
       .query({
-        ssn: '123-12-1234'
+        ssn: '123-12-1111'
       });
 
     expect(res).to.have.status(200);
@@ -53,9 +53,9 @@ describe('Acceptance :: Route :: Trainee', () => {
   });
 
   it('should not allow duplicate writes', function*() {
-    yield Trainee.ensureIndexes();
     this.timeout(5000);
     let app = api().listen();
+
     let trainee = yield (new Trainee({
       name: {
         first: 'Bob',
@@ -67,21 +67,27 @@ describe('Acceptance :: Route :: Trainee', () => {
 
     yield new Promise(resolve => setTimeout(resolve, 1000));
 
-    let response = yield chai.request(app)
-      .post('/api/v1/trainees')
-      .set('X-Test-User', testKey)
-      .send({
-        trainee: {
-          name: { first: 'Test', last: 'Test' },
-          email: 'test@test.com',
-          ssn: '123-12-1233'
-        }
-      });
+    let response, noRaceErr;
+
+    try {
+      response = yield chai.request(app)
+        .post('/api/v1/trainees')
+        .set('X-Test-User', testKey)
+        .send({
+          trainee: {
+            name: { first: 'Test', last: 'Test' },
+            email: 'test@test.com',
+            ssn: '123-12-1233'
+          }
+        });
+    } catch (e) {
+      noRaceErr = e;
+    }
 
     let responseDb = yield Trainee.find({ ssn: '123-12-1233' }).exec();
-    console.log(responseDb);
+
     expect(responseDb).to.have.lengthOf(1);
-    expect(response).to.have.status(400);
+    expect(noRaceErr).to.have.status(400);
 
     let responses = [ 1, 2 ].map(() => chai.request(app)
       .post('/api/v1/trainees')
@@ -94,13 +100,17 @@ describe('Acceptance :: Route :: Trainee', () => {
         }
       }));
 
-    yield responses;
-    console.log('got responses');
+    let err;
 
+    try {
+      responses = yield responses;
+    } catch (e) {
+      err = e;
+    }
 
     let trainees = yield Trainee.find({ ssn: '123-12-1234' }).exec();
 
     expect(trainees).to.have.lengthOf(1);
-    expect(responses.find(x => x.status === 400), 'Duplicate key error is returned').to.exist;
+    expect(err).to.have.status(400);
   });
 });
