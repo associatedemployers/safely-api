@@ -10,7 +10,7 @@
     "test-watch": "NODE_ENV=test AWS_BUCKET=safely-test mocha -R spec --harmony --watch api/*/test.js lib/models/*/test.js lib/test-support/*/test.js lib/models/plugins/*/test.js"
   },
   "engines": {
-    "node": "6.12.2"
+    "node": "^9.9.0"
   },
   "dependencies": {
     "bluebird": "^3.4.1",
@@ -65,6 +65,8 @@
     "winston": "^2.2.0"
   },
   "devDependencies": {
+    "eslint": "^4.19.1",
+    "babel-eslint": "^8.2.2",
     "chai": "^3.5.0",
     "chai-http": "^2.0.1",
     "co-mocha": "^1.1.3",
