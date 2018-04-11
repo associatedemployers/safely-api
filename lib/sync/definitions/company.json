@@ -1,8 +1,0 @@
-{
-  "straightMap": "key",
-
-  "someLegacyKey": {
-    "inHash": "someHash",
-    "toKey": "someKey"
-  }
-}
