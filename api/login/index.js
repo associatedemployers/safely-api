@@ -12,9 +12,11 @@ exports.login = function* () {
     return;
   }
 
+  email = email.toLowerCase();
+
   let user = yield UserModel.findOne({ email }).exec();
 
-  if ( !user ) {
+  if (!user) {
     this.status = 404;
     this.body = 'User not found';
     return;
