@@ -52,7 +52,7 @@
     "moment": "^2.13.0",
     "mongoose": "5.0.14",
     "mongoose-create-model": "0.0.2",
-    "mongoose-cryptify": "0.1.1",
+    "mongoose-cryptify": "1.0.0",
     "mongoose-error-helper": "0.0.2",
     "mongoose-schema-extend": "^0.2.2",
     "mongoose-title-case": "0.0.4",
