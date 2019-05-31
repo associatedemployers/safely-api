@@ -1,0 +1,7 @@
+{
+  "name": "status checks",
+  "description": "used for status/health checks",
+  "routes": {
+    "GET /__status__": "getHealth"
+  }
+}
