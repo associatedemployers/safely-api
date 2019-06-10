@@ -350,13 +350,13 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
-bcrypt@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/bcrypt/-/bcrypt-3.0.1.tgz#2ea12883330bf5f81926f70475cf21bdd0c2f8ff"
-  integrity sha512-DSTLQZdvzJ7znQ1WOqkN3X0Hutt6BTVaZNWyX8/B4P+s9SIxkYgtGKfgHokli1syPcWJUE63/kGVyV1ECA4d1A==
+bcrypt@^3.0.6:
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/bcrypt/-/bcrypt-3.0.6.tgz#f607846df62d27e60d5e795612c4f67d70206eb2"
+  integrity sha512-taA5bCTfXe7FUjKroKky9EXpdhkVvhE5owfxfLYodbrAR1Ul3juLmIQmIQBK4L9a5BuUcE6cqmwT+Da20lF9tg==
   dependencies:
-    nan "2.11.0"
-    node-pre-gyp "0.11.0"
+    nan "2.13.2"
+    node-pre-gyp "0.12.0"
 
 big-number@0.3.1:
   version "0.3.1"
@@ -2760,12 +2760,12 @@ mongoose-create-model@0.0.2:
   resolved "https://registry.yarnpkg.com/mongoose-create-model/-/mongoose-create-model-0.0.2.tgz#a4d580cd3266ff78b2bbb806415ebed1865f13cb"
   integrity sha1-pNWAzTJm/3iyu7gGQV6+0YZfE8s=
 
-mongoose-cryptify@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/mongoose-cryptify/-/mongoose-cryptify-1.0.0.tgz#987284132e229bc5d6f5902206fb513be42dd733"
-  integrity sha512-ylpMzmU/L+5NHDnud0lMLpa3ViPvtlnvfWEmMM4RRlcrVLTYIpnY+flPGYpkHFG7I4FqpQxuY45a6FK76qLscg==
+mongoose-cryptify@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/mongoose-cryptify/-/mongoose-cryptify-1.0.1.tgz#f39a2013d2e26472d8e62ac536993d27928359d6"
+  integrity sha512-bOkxOTIB+/AMq7zbh/OWp4tNmY7UxpwTIBUc7fLXfeSYJ6LUY2eyfUvpzIm+0RS9AAjwhZ/GgZUaYtiFjzV1Lg==
   dependencies:
-    bcrypt "3.0.1"
+    bcrypt "^3.0.6"
     bluebird "^2.3.11"
 
 mongoose-error-helper@0.0.2:
@@ -2866,10 +2866,10 @@ mute-stream@0.0.7:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.7.tgz#3075ce93bc21b8fab43e1bc4da7e8115ed1e7bab"
   integrity sha1-MHXOk7whuPq0PhvE2n6BFe0ee6s=
 
-nan@2.11.0:
-  version "2.11.0"
-  resolved "https://registry.yarnpkg.com/nan/-/nan-2.11.0.tgz#574e360e4d954ab16966ec102c0c049fd961a099"
-  integrity sha512-F4miItu2rGnV2ySkXOQoA8FKz/SR2Q2sWP0sbTxNxz/tuokeC8WxOhPMcwi0qIyGtVn/rrSeLbvVkznqCdwYnw==
+nan@2.13.2:
+  version "2.13.2"
+  resolved "https://registry.yarnpkg.com/nan/-/nan-2.13.2.tgz#f51dc7ae66ba7d5d55e1e6d4d8092e802c9aefe7"
+  integrity sha512-TghvYc72wlMGMVMluVo9WRJc0mB8KxxF/gZ4YYFy7V2ZQX9l7rgbPg7vjS9mt6U5HXODVFVI2bOduCzwOMv/lw==
 
 natural-compare@^1.4.0:
   version "1.4.0"
@@ -2908,10 +2908,10 @@ node-environment-flags@1.0.5:
     object.getownpropertydescriptors "^2.0.3"
     semver "^5.7.0"
 
-node-pre-gyp@0.11.0:
-  version "0.11.0"
-  resolved "https://registry.yarnpkg.com/node-pre-gyp/-/node-pre-gyp-0.11.0.tgz#db1f33215272f692cd38f03238e3e9b47c5dd054"
-  integrity sha512-TwWAOZb0j7e9eGaf9esRx3ZcLaE5tQ2lvYy1pb5IAaG1a2e2Kv5Lms1Y4hpj+ciXJRofIxxlt5haeQ/2ANeE0Q==
+node-pre-gyp@0.12.0:
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/node-pre-gyp/-/node-pre-gyp-0.12.0.tgz#39ba4bb1439da030295f899e3b520b7785766149"
+  integrity sha512-4KghwV8vH5k+g2ylT+sLTjy5wmUOb9vPhnM8NHvRf9dHmnW/CndrFXy2aRPaPST6dugXSdHXfeaHQm77PIz/1A==
   dependencies:
     detect-libc "^1.0.2"
     mkdirp "^0.5.1"
