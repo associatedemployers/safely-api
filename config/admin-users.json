@@ -4,17 +4,9 @@
     "firstName": "James",
     "lastName": "Collins"
   }, {
-    "email": "victoria@aehr.org",
-    "firstName": "Victoria",
-    "lastName": "Watts"
-  }, {
     "email": "cyndi@aehr.org",
     "firstName": "Cyndi",
     "lastName": "Boyd"
-  }, {
-    "email": "darcy@aehr.org",
-    "firstName": "Darcy",
-    "lastName": "Simpson"
   }, {
     "email": "greg@aehr.org",
     "firstName": "Greg",
@@ -28,12 +20,12 @@
     "firstName": "Tracy",
     "lastName": "Roadifer"
   }, {
-    "email": "laurie@aehr.org",
-    "firstName": "Laurie",
-    "lastName": "Wagner"
-  },{
     "email": "dana@aehr.org",
     "firstName": "Dana",
     "lastName": "Kelly"
+  }, {
+    "email": "joni@aehr.org",
+    "firstName": "Joni",
+    "lastName": "Hackmann"
   }]
 }
