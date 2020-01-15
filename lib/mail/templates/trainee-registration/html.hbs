@@ -27,8 +27,16 @@
                   <tbody>
                     <tr>
                       <th class="small-12 large-12 columns first last">
+                        <h2>We’re moving!</h2>
+                        <p> 
+                          MSSC and the Site Specific and refinery training is moving to a new building in mid-February. The training lab will
+                          close at noon on February 13th and be closed all day on February 14th. We reopen at our new location, 3435 Mountain Pass
+                          Road, Billings, on Monday, February 17th. Should there be an emergency during the move, we will make arrangements to
+                          provide the required training. <a href="https://www.mssc.org/wp-content/uploads/2020/01/Training-Lab-MSSC-Moving.pdf">Click here</a>
+                          to view the details.
+                        </p>
                         <h3>
-                          <strong>{{registration.company.name}}</strong><br /> has registered you for training
+                          <strong>{{company.name}}</strong><br /> has registered you for training
                           {{#if multiDay}}
                             {{start}} through {{end}}.
                           {{else}}
@@ -78,9 +86,13 @@
                       <td>
                         <h4>Where do I go?</h4>
                         <p><strong>Arrive at:</strong></p>
-                        <p>2727 Central Ave.,<br/>Suite 2</br>Billings, MT 59102</p>
-                        <p><strong>From the rear parking lot:</strong></p>
-                        <p>Enter the building and walk down the hallway. Our labs are on the left across from the bathrooms. You should see our name on the door, "Montana Safety Services Counsel".</p>
+                        {{#if moveDate}}
+                          <p>3435 Mountain Pass Road<br>Billings, MT 59102</p>
+                        {{else}}
+                          <p>2727 Central Ave.,<br />Suite 2</br>Billings, MT 59102</p>
+                          <p><strong>From the rear parking lot:</strong></p>
+                          <p>Enter the building and walk down the hallway. Our labs are on the left across from the bathrooms. You should see our name on the door, "Montana Safety Services Counsel".</p>
+                        {{/if}}
                       </td>
                     </tr>
                     <tr class="small-12 large-12 columns first last">
