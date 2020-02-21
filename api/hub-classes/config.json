@@ -1,0 +1,6 @@
+{
+  "name": "hub-classes",
+  "description": "hub class resource endpoint",
+  "secure": false,
+  "ops": "r"
+}
