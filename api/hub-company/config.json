@@ -1,0 +1,8 @@
+{
+  "name": "hub-company",
+  "description": "hub company utility endpoints",
+  "secure": false,
+  "routes": {
+    "GET /retrieve": "getHubCompany"
+  }
+}

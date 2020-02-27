@@ -1,0 +1,3 @@
+exports.getHubCompany = function* () {
+  
+};
