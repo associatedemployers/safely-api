@@ -1,44 +1,35 @@
 {
-  "admins": [
-    {
-      "email": "james@aehr.org",
-      "firstName": "James",
-      "lastName": "Collins"
-    },
-    {
-      "email": "cyndi@aehr.org",
-      "firstName": "Cyndi",
-      "lastName": "Boyd"
-    },
-    {
-      "email": "greg@aehr.org",
-      "firstName": "Greg",
-      "lastName": "Roadifer"
-    },
-    {
-      "email": "sarah@aehr.org",
-      "firstName": "Sarah",
-      "lastName": "Zimmerman"
-    },
-    {
-      "email": "tracy@aehr.org",
-      "firstName": "Tracy",
-      "lastName": "Roadifer"
-    },
-    {
-      "email": "dana@aehr.org",
-      "firstName": "Dana",
-      "lastName": "Kelly"
-    },
-    {
-      "email": "joni@aehr.org",
-      "firstName": "Joni",
-      "lastName": "Hackmann"
-    },
-    {
-      "email": "branden@aehr.org",
-      "firstName": "Branden",
-      "lastName": "Beck"
-    }
-  ]
+  "admins": [{
+    "email": "james@aehr.org",
+    "firstName": "James",
+    "lastName": "Collins"
+  }, {
+    "email": "cyndi@aehr.org",
+    "firstName": "Cyndi",
+    "lastName": "Boyd"
+  }, {
+    "email": "greg@aehr.org",
+    "firstName": "Greg",
+    "lastName": "Roadifer"
+  }, {
+    "email": "sarah@aehr.org",
+    "firstName": "Sarah",
+    "lastName": "Zimmerman"
+  }, {
+    "email": "tracy@aehr.org",
+    "firstName": "Tracy",
+    "lastName": "Roadifer"
+  }, {
+    "email": "dana@aehr.org",
+    "firstName": "Dana",
+    "lastName": "Kelly"
+  }, {
+    "email": "joni@aehr.org",
+    "firstName": "Joni",
+    "lastName": "Hackmann"
+  }, {
+    "email": "branden@aehr.org",
+    "firstName": "Branden",
+    "lastName": "Beck"
+  }]
 }
