@@ -1,8 +1,8 @@
 {
   "name": "hub-classes",
   "description": "hub class resource endpoint",
-  "secure": false,
-  "ops": "r",
+  "ops": "crud",
+  "securedOps": "cud",
   "reports": [{
     "name": "withAvailability",
     "type": "index",

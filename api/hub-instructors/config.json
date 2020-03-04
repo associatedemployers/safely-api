@@ -1,6 +1,6 @@
 {
   "name": "hub-instructors",
   "description": "hub instructor resource endpoint",
-  "secure": false,
-  "ops": "r"
+  "ops": "crud",
+  "securedOps": "cud"
 }
