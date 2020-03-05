@@ -11,3 +11,4 @@ utils/new-user.js
 
 config/sql.json
 yarn-error.log
+.env
