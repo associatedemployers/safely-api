@@ -1,0 +1,11 @@
+{
+  "name": "hub-banners",
+  "description": "hub banner resource endpoint",
+  "ops": "crud",
+  "securedOps": "cud",
+  "reports": [{
+    "name": "assortment",
+    "type": "index",
+    "bypassInitialQuery": true
+  }]
+}

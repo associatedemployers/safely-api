@@ -65,7 +65,7 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
     }
   }, {
     $addFields: {
-      seatsRemaining: { $subtract: [ '$seats', '$totalParticipants' ]}
+      seatsRemaining: { $cond: [ '$totalParticipants', { $subtract: [ '$seats', '$totalParticipants' ] }, '$seats' ] }
     }
   }, {
     $project
