@@ -1,6 +1,6 @@
 const HubCompany = require('../../lib/models/hub-company');
 
-exports.getHubCompany = function* () {
+exports.getMemberStatus = function* () {
   const email = (this.request.body.email || '').toLowerCase();
 
   if (!email || !email.length) {
@@ -12,9 +12,6 @@ exports.getHubCompany = function* () {
 
   this.status = 200;
   this.body = {
-    memberStatus,
-    existingCompany: yield HubCompany.findOne({
-      email
-    })
+    memberStatus
   };
 };

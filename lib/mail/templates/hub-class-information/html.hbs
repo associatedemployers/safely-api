@@ -1,0 +1,75 @@
+<!-- <style> -->
+<table class="body">
+  <tr>
+    <td class="float-center" align="center" valign="top">
+      <center data-parsed="">
+        {{> "safely-header"}}
+        <table align="center" class="container body-drip float-center">
+          <tbody>
+            <tr>
+              <td>
+                <table class="spacer">
+                  <tbody>
+                    <tr>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <table class="row">
+                  <tbody>
+                    <tr class="small-12 large-12 columns first last">
+                      <td><h5>The following registrations were made today:</h5></td>
+                    </tr>
+                    <tr class="small-12 large-12 columns first last">
+                      <td>
+                        <ul>
+                          {{#each registrations as |reg|}}
+                            <li>
+                              <strong>{{reg.trainee.name.first}} {{reg.trainee.name.last}}</strong>:<br />
+                              {{reg.startStr}} - {{reg.endStr}}
+                              <br />
+                              <ul>
+                                {{#each reg.classes as |course|}}
+                                  <li>{{course.name}} - {{course.hours}}hrs</li>
+                                {{/each}}
+                              </ul>
+                            </li>
+                          {{/each}}
+                        </ul>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <table class="row collapsed footer">
+                  <tbody>
+                    <tr>
+                      <th class="small-12 large-12 columns first last">
+                        <table>
+                          <tr>
+                            <th>
+                              <table class="spacer">
+                                <tbody>
+                                  <tr>
+                                    <td height="16px" style="font-size:16px;line-height:16px;">&#xA0;</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                              <p class="text-center">&copy; Montana Safety Services Counsel</p>
+                            </th>
+                            <th class="expander"></th>
+                          </tr>
+                        </table>
+                      </th>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </center>
+    </td>
+  </tr>
+</table>

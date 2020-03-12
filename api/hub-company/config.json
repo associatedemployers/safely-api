@@ -3,6 +3,6 @@
   "description": "hub company utility endpoints",
   "secure": false,
   "routes": {
-    "GET /hub-company/retrieve": "getHubCompany"
+    "GET /hub-company/retrieve": "getMemberStatus"
   }
 }
