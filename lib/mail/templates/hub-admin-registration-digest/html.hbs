@@ -17,19 +17,20 @@
 
                 <table class="row">
                   <tbody>
-                    <tr class="small-12 large-12 columns first first">
-                      <td><h2>Registration received.</h2></td>
-                    </tr>
                     <tr class="small-12 large-12 columns first last">
-                      <td><h3>
-                        Thank you for your registration for {{registration.hubClass.classInformation.name}}.
-                        {{#if registration.po}}
-                          This registration is part of PO # {{registration.po}}.
-                        {{/if}}
-                        {{#if total}}
-                          Your total due is {{total}}.
-                        {{/if}}
-                      </h3></td>
+                      <td><h2>Class registrations recieved yesterday:</h2></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <table class="row">
+                  <tbody>
+                    <tr class="small-12 large-12 columns first last">
+                      <td>
+                        {{#each registrations as |registration|}}
+                          {{registration.participants.length}} participant(s) for {{registration.hubClass.classInformation.name}}
+                        {{/each}}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
