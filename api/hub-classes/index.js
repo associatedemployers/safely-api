@@ -7,7 +7,8 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
   } = compiledQuery;
 
   let $project = {
-    registrations: 0
+    registrations: 0,
+    rosterAccessLink: -1
   };
 
   if (select && select.length) {

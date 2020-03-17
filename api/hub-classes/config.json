@@ -7,5 +7,10 @@
     "name": "withAvailability",
     "type": "index",
     "bypassInitialQuery": true
-  }]
+  }],
+  "crudOptions": {
+    "all": {
+      "select": "-rosterAccessKey"
+    }
+  }
 }
