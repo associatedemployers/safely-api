@@ -1,6 +1,6 @@
 {
   "name": "hub-participants",
   "description": "hub participant resource endpoint",
-  "ops": "c",
+  "ops": "crud",
   "securedOps": "rud"
 }
