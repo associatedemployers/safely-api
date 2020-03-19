@@ -1,0 +1,16 @@
+{
+  "name": "hub-classes",
+  "description": "hub class resource endpoint",
+  "ops": "crud",
+  "securedOps": "cud",
+  "reports": [{
+    "name": "withAvailability",
+    "type": "index",
+    "bypassInitialQuery": true
+  }],
+  "crudOptions": {
+    "all": {
+      "select": "-rosterAccessKey"
+    }
+  }
+}

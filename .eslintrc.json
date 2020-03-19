@@ -7,6 +7,9 @@
     "amd": false,
     "mocha": true
   },
+  "globals": {
+    "Promise": true
+  },
   "ecmaFeatures": {
     "blockBindings": true,
     "modules": true,

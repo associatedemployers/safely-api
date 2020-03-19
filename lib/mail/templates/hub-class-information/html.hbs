@@ -1,0 +1,105 @@
+<table class="body">
+  <tr>
+    <td class="float-center" align="center" valign="top">
+      <center data-parsed="">
+        {{> "hub-header"}}
+        <table align="center" class="container body-drip float-center">
+          <tbody>
+            <tr>
+              <td>
+                <table class="spacer">
+                  <tbody>
+                    <tr>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <table class="row">
+                  <tbody>
+                    <tr class="small-12 large-12 columns first">
+                      <td><h2 class="center"><center>Class information for {{registration.hubClass.classInformation.name}}</center></h2></td>
+                    </tr>
+                    <tr class="small-12 large-12 columns last">
+                      <td><p>{{registration.hubClass.classInformation.description}}</p></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <table class="row">
+                  <tbody>
+                    <tr class="small-12 large-12 columns first">
+                      <td><h2>When</h2></td>
+                    </tr>
+                    {{#each times as |time|}}
+                      <tr class="small-12 large-12 columns">
+                        <td>
+                          {{time.start}}-{{time.end}} {{time.date}}
+                        </td>
+                      </tr>
+                    {{/each}}
+                  </tbody>
+                </table>
+
+                <table class="row">
+                  <tbody>
+                    <tr class="small-12 large-12 columns first">
+                      <td><h2>Where</h2></td>
+                    </tr>
+                    <tr class="small-12 large-12 columns">
+                      <td>
+                        {{registration.hubClass.location.name}}<br />
+                        {{registration.hubClass.location.address.line1}}<br />
+                        {{#if registration.hubClass.location.address.line2}}
+                          {{registration.hubClass.location.name}}<br />
+                        {{/if}}
+                        {{registration.hubClass.location.address.city}}, {{registration.hubClass.location.address.state}} {{registration.hubClass.location.address.zipcode}}
+                        {{#if registration.hubClass.location.address.directions}}
+                          <br />{{registration.hubClass.location.address.directions}}
+                        {{/if}}
+                      </td>
+                    </tr>
+                    <tr class="small-12 large-12 columns last">
+                      <td>
+                        {{#if mapUri}}
+                          <img src="{{mapUri}}" width="600" height="300" />
+                        {{/if}}
+                        {{#if mapLink}}
+                          <a href="{{mapLink}}">{{mapLink}}</a>
+                        {{/if}}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <table class="row collapsed footer">
+                  <tbody>
+                    <tr>
+                      <th class="small-12 large-12 columns first last">
+                        <table>
+                          <tr>
+                            <th>
+                              <table class="spacer">
+                                <tbody>
+                                  <tr>
+                                    <td height="16px" style="font-size:16px;line-height:16px;">&#xA0;</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                              <p class="text-center">&copy; Montana Safety Services Council & Associated Employers</p>
+                            </th>
+                            <th class="expander"></th>
+                          </tr>
+                        </table>
+                      </th>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </center>
+    </td>
+  </tr>
+</table>

@@ -1,0 +1,6 @@
+{
+  "name": "hub-registrations",
+  "description": "hub registration resource endpoint",
+  "ops": "crud",
+  "securedOps": "rud"
+}

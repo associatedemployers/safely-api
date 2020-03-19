@@ -1,0 +1,6 @@
+{
+  "name": "hub-instructors",
+  "description": "hub instructor resource endpoint",
+  "ops": "crud",
+  "securedOps": "cud"
+}
