@@ -54,7 +54,7 @@
     "lodash-deep": "^2.0.0",
     "lru-cache": "^4.1.1",
     "moment": "^2.13.0",
-    "mongoose": "^5.9.4",
+    "mongoose": "^5.11.13",
     "mongoose-create-model": "0.0.2",
     "mongoose-cryptify": "^1.0.0",
     "mongoose-error-helper": "0.0.2",
