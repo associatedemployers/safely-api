@@ -44,7 +44,6 @@ let findBlocks = time => AvailableTime.find({
   .reduce((b, t) => b.concat(t.blocks), []);
 
 exports.getAvailability = function*() {
-  require('mongoose').set('debug', true);
   try {
     // Check the cache...
     const cacheKey = JSON.stringify(this.request.body),
@@ -159,7 +158,5 @@ exports.getAvailability = function*() {
     error(`Error fetching availability: ${err}`);
     error(err.stack);
     throw err;
-  } finally {
-    require('mongoose').set('debug', false);
   }
 };
