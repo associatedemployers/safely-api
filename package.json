@@ -50,7 +50,7 @@
     "koa-router": "~3.1.4",
     "koa-simple-qs": "0.0.3",
     "less": "^2.7.1",
-    "lodash": "^4.17.13",
+    "lodash": "^4.17.19",
     "lodash-deep": "^2.0.0",
     "lru-cache": "^4.1.1",
     "moment": "^2.13.0",
