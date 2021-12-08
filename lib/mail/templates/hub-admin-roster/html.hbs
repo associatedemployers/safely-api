@@ -45,11 +45,7 @@
                             {{registration.participant.email}}
                           </td>
                           <td>
-                            {{#if registration.isClassMember}}
-                              Y
-                            {{else}}
-                              N
-                            {{/if}}
+                            {{if registration.isClassMember "Y" "N"}}
                           </td>
                         </tr>
                       {{else}}
