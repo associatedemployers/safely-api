@@ -1,0 +1,105 @@
+<table class="body">
+  <tr>
+    <td class="float-center" align="center" valign="top">
+      <center data-parsed="">
+        {{> "hub-warning"}}
+        {{> "hub-header"}}
+        <table align="center" class="container body-drip float-center">
+          <tbody>
+            <tr>
+              <td>
+                <table class="spacer">
+                  <tbody>
+                    <tr>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <table class="row">
+                  <tbody>
+                    <tr class="center small-12 large-12 columns first last">
+                      <td><h2 class="float center">No instructor has been assigned to the class {{hubClass.classInformation.name}}</h2></td>
+                    </tr>
+                  </tbody>
+                </table>
+                
+                <hr>
+                <table class="row">
+                  {{#if registrations}}
+                    <table>
+                      <thead>
+                        <th>Company</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Member</th>
+                      </thead>
+                      <tbody>
+                        {{#each registrations as |registration|}}
+                          <tr>
+                            <td>
+                              {{registration.companyName}}
+                            </td>
+                            <td>
+                              {{registration.participant.firstName}}
+                              {{registration.participant.lastName}}
+                            </td>
+                            <td>
+                              {{registration.participant.email}}
+                            </td>
+                            <td>
+                              {{if registration.isClassMember "Y" "N"}}
+                            </td>
+                          </tr>
+                        {{/each}}
+                      </tbody>
+                    </table>
+                  {{/if}}
+                  {{#unless registrations}}
+                    <table align="center" class="float-center">
+                      <tr>
+                        <td class="center">No Participants</td>
+                      </tr>
+                    </table>
+                  {{/unless}}
+                </table>
+
+                <table class="row">
+                  <tbody>
+                    <tr class="small-12 large-12 columns first last">
+                      <td class="center"><center><a href="https://lab.mssc.org/hub/roster/{{hubClass._id}}?key={{hubClass.rosterAccessKey}}">View current roster</a></center></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <table class="row collapsed footer">
+                  <tbody>
+                    <tr>
+                      <th class="small-12 large-12 columns first last">
+                        <table>
+                          <tr>
+                            <th>
+                              <table class="spacer">
+                                <tbody>
+                                  <tr>
+                                    <td height="16px" style="font-size:16px;line-height:16px;">&#xA0;</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                              <p class="text-center">&copy; Montana Safety Services Council & Associated Employers</p>
+                            </th>
+                            <th class="expander"></th>
+                          </tr>
+                        </table>
+                      </th>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </center>
+    </td>
+  </tr>
+</table>
