@@ -19,57 +19,34 @@
                 <table class="row">
                   <tbody>
                     <tr class="center small-12 large-12 columns first last">
-                      <td><h2 class="float center">No instructor has been assigned to the class {{hubClass.classInformation.name}}</h2></td>
+                      <td><h2 class="float center">{{inflect-text "Instructors" hubClassesNoInstructor.length}} required for the following {{inflect-text "classes" hubClassesNoInstructor.length}}</h2></td>
                     </tr>
                   </tbody>
                 </table>
                 
                 <hr>
                 <table class="row">
-                  {{#if registrations}}
-                    <table>
-                      <thead>
-                        <th>Company</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Member</th>
-                      </thead>
-                      <tbody>
-                        {{#each registrations as |registration|}}
-                          <tr>
-                            <td>
-                              {{registration.companyName}}
-                            </td>
-                            <td>
-                              {{registration.participant.firstName}}
-                              {{registration.participant.lastName}}
-                            </td>
-                            <td>
-                              {{registration.participant.email}}
-                            </td>
-                            <td>
-                              {{if registration.isClassMember "Y" "N"}}
-                            </td>
-                          </tr>
-                        {{/each}}
-                      </tbody>
-                    </table>
-                  {{/if}}
-                  {{#unless registrations}}
-                    <table align="center" class="float-center">
-                      <tr>
-                        <td class="center">No Participants</td>
-                      </tr>
-                    </table>
-                  {{/unless}}
-                </table>
-
-                <table class="row">
-                  <tbody>
-                    <tr class="small-12 large-12 columns first last">
-                      <td class="center"><center><a href="https://lab.mssc.org/hub/roster/{{hubClass._id}}?key={{hubClass.rosterAccessKey}}">View current roster</a></center></td>
-                    </tr>
-                  </tbody>
+                  <table>
+                    <thead>
+                      <th>Class</th>
+                      <th>Location</th>
+                    </thead>
+                    <tbody>
+                      {{#each hubClassesNoInstructor as |hubClass|}}
+                        <tr>
+                          <td>
+                            <a href="https://lab.mssc.org/hub/roster/{{hubClass._id}}?key={{hubClass.rosterAccessKey}}">{{hubClass.classInformation.name}}</a>
+                          </td>
+                          <td>
+                            {{if hubClass.location.name hubClass.location.name}}
+                            {{#unless hubClass.location.name}}
+                              {{hubClass.location.address.city}}, {{hubClass.location.address.state}}
+                            {{/unless}}
+                          </td>
+                        </tr>
+                      {{/each}}
+                    </tbody>
+                  </table>
                 </table>
 
                 <table class="row collapsed footer">
