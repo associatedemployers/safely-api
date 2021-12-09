@@ -38,7 +38,9 @@
                             <a href="https://lab.mssc.org/hub/roster/{{hubClass._id}}?key={{hubClass.rosterAccessKey}}">{{hubClass.classInformation.name}}</a>
                           </td>
                           <td>
-                            {{if hubClass.location.name hubClass.location.name}}
+                            {{#if hubClass.location.name}}
+                              {{hubClass.location.name}}
+                            {{/if}}
                             {{#unless hubClass.location.name}}
                               {{hubClass.location.address.city}}, {{hubClass.location.address.state}}
                             {{/unless}}
