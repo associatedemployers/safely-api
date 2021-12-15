@@ -19,7 +19,7 @@ const cache = lruCache({
   max: 10,
   maxAge: 1000 * 20
 });
-//
+
 function getWeekNums (momentObj) {
   var clonedMoment = moment(momentObj),
       start = clonedMoment.startOf('month').toDate(),
