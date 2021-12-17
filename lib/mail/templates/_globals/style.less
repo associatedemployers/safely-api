@@ -68,9 +68,6 @@ p.small {
   }
 }
 
-.logo {
-}
-
 @table-border-color: @gray-lighter;
 
 table.container tbody tr td {
@@ -122,8 +119,19 @@ table.as-table {
   }
 }
 
+.border {
+  border: 2px solid;
+  &.danger {
+    border-color: @safely-danger;
+  }
+}
+
 .header h1.logo {
   text-align: center;
   color: @safely-success;
   padding-top: 1em;
+
+  &.danger {
+    color: @safely-danger;
+  }
 }
