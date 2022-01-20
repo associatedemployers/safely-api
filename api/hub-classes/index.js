@@ -40,346 +40,393 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
       lookbackStart = moment(startFrom).startOf('week').toDate(),
       lookbackEnd   = moment(startFrom).endOf('month').endOf('week').toDate();
 
-  let querys = [{
-    '$match': {
-      ...query || {},
-      'times.start': { '$gte': new Date() }
-    }
-  },
-  ...optionalStages,
-  {
-    '$lookup': {
-      'from': 'hubregistrations', 
-      'let': {
-        'hubClass': '$_id'
-      }, 
-      'as': 'hubRegistrations', 
-      'pipeline': [
-        {
-          '$match': {
-            '$or': [
-              {
-                'start': {
-                  '$gte': lookbackStart, 
-                  '$lte': lookbackEnd
-                }
-              }, {
-                'end': {
-                  '$gte': lookbackStart, 
-                  '$lte': lookbackEnd
-                }
-              }
-            ], 
-            '$expr': {
-              '$eq': [
-                '$hubClass', '$$hubClass'
-              ]
-            }
-          }
-        }, {
-          '$project': {
-            'start': '$start', 
-            'end': '$end', 
-            'participantCount': {
-              '$sum': {
-                '$size': '$participants'
-              }
-            }, 
-            'participants': '$participants'
-          }
-        }
-      ]
-    }
-  }, {
-    '$lookup': {
-      'from': 'registrations', 
-      'let': {
-        'hubClass': '$_id'
-      }, 
-      'as': 'registrations', 
-      'pipeline': [
-        {
-          '$match': {
-            '$or': [
-              {
-                'start': {
-                  '$gte': lookbackStart, 
-                  '$lte': lookbackEnd
-                }
-              }, {
-                'end': {
-                  '$gte': lookbackStart, 
-                  '$lte': lookbackEnd
-                }
-              }
-            ]
-          }
-        }, {
-          '$project': {
-            'start': '$start', 
-            'end': '$end', 
-            'trainee': '$trainee'
-          }
-        }
-      ]
-    }
-  }, {
-    '$unwind': {
-      'path': '$registrations', 
-      'preserveNullAndEmptyArrays': true
-    }
-  }, {
-    '$unwind': {
-      'path': '$hubRegistrations', 
-      'preserveNullAndEmptyArrays': true
-    }
-  }, {
-    '$addFields': {
-      'tempTimesRegs': [
-        {
-          '$mergeObjects': [
-            {
-              '$concatArrays': [
+  let querys = [
+    ...optionalStages,
+    {
+      '$lookup': {
+        'from': 'hubregistrations', 
+        'let': {
+          'hubClass': '$_id'
+        }, 
+        'as': 'hubRegistrations', 
+        'pipeline': [
+          {
+            '$match': {
+              '$or': [
                 {
-                  '$filter': {
-                    'input': '$times', 
-                    'as': 'time', 
-                    'cond': {
-                      '$eq': [
-                        '$$time.start', '$registrations.start'
-                      ]
-                    }
+                  'start': {
+                    '$gte': lookbackStart, 
+                    '$lte': lookbackEnd
                   }
-                }, [
-                  {
-                    'trainee': '$registrations.trainee'
+                }, {
+                  'end': {
+                    '$gte': lookbackStart, 
+                    '$lte': lookbackEnd
                   }
+                }
+              ], 
+              '$expr': {
+                '$eq': [
+                  '$hubClass', '$$hubClass'
                 ]
-              ]
+              }
             }
-          ]
-        }
-      ]
-    }
-  }, {
-    '$addFields': {
-      'tempHubTimeRegs': [
-        {
-          '$mergeObjects': [
-            {
-              '$concatArrays': [
+          }, {
+            '$project': {
+              'start': '$start', 
+              'end': '$end', 
+              'participantCount': {
+                '$sum': {
+                  '$size': '$participants'
+                }
+              }, 
+              'participants': '$participants'
+            }
+          }
+        ]
+      }
+    }, {
+      '$lookup': {
+        'from': 'registrations', 
+        'let': {
+          'hubClass': '$_id'
+        }, 
+        'as': 'registrations', 
+        'pipeline': [
+          {
+            '$match': {
+              '$or': [
                 {
-                  '$filter': {
-                    'input': '$times', 
-                    'as': 'time', 
-                    'cond': {
-                      '$eq': [
-                        '$$time.start', '$hubRegistrations.start'
-                      ]
-                    }
+                  'start': {
+                    '$gte': lookbackStart, 
+                    '$lte': lookbackEnd
                   }
-                }, [
-                  {
-                    'hubTrainee': '$hubRegistrations.participants'
+                }, {
+                  'end': {
+                    '$gte': lookbackStart, 
+                    '$lte': lookbackEnd
                   }
-                ]
+                }
               ]
             }
-          ]
-        }
-      ]
-    }
-  }, {
-    '$addFields': {
-      'timesWithRegs': {
-        '$map': {
-          'input': '$times', 
-          'as': 'm', 
-          'in': {
+          }, {
+            '$project': {
+              'start': '$start', 
+              'end': '$end', 
+              'trainee': '$trainee'
+            }
+          }
+        ]
+      }
+    }, {
+      '$unwind': {
+        'path': '$registrations', 
+        'preserveNullAndEmptyArrays': true
+      }
+    }, {
+      '$unwind': {
+        'path': '$hubRegistrations', 
+        'preserveNullAndEmptyArrays': true
+      }
+    }, {
+      '$addFields': {
+        'tempTimesRegs': [
+          {
             '$mergeObjects': [
-              '$$m', {
-                'traniee': {
-                  '$reduce': {
-                    'input': '$tempTimesRegs', 
-                    'initialValue': '$$m.start', 
-                    'in': {
-                      '$cond': [
-                        {
-                          '$eq': [
-                            '$$this._id', '$$m._id'
-                          ]
-                        }, '$$this.trainee', undefined
-                      ]
+              {
+                '$concatArrays': [
+                  {
+                    '$filter': {
+                      'input': '$times', 
+                      'as': 'time', 
+                      'cond': {
+                        '$eq': [
+                          '$$time.start', '$registrations.start'
+                        ]
+                      }
                     }
-                  }
-                }
-              }, {
-                'hubTraniee': {
-                  '$reduce': {
-                    'input': '$tempHubTimeRegs', 
-                    'initialValue': '$$m.start', 
-                    'in': {
-                      '$cond': [
-                        {
-                          '$eq': [
-                            '$$this._id', '$$m._id'
-                          ]
-                        }, '$$this.hubTrainee', undefined
-                      ]
+                  }, [
+                    {
+                      'trainee': '$registrations.trainee'
                     }
-                  }
-                }
+                  ]
+                ]
               }
             ]
           }
+        ]
+      }
+    }, {
+      '$addFields': {
+        'tempHubTimeRegs': [
+          {
+            '$mergeObjects': [
+              {
+                '$concatArrays': [
+                  {
+                    '$filter': {
+                      'input': '$times', 
+                      'as': 'time', 
+                      'cond': {
+                        '$eq': [
+                          '$$time.start', '$hubRegistrations.start'
+                        ]
+                      }
+                    }
+                  }, [
+                    {
+                      'hubTrainee': '$hubRegistrations.participants'
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }, {
+      '$addFields': {
+        'timesWithRegs': {
+          '$map': {
+            'input': '$times', 
+            'as': 'm', 
+            'in': {
+              '$mergeObjects': [
+                '$$m', {
+                  'trainee': {
+                    '$reduce': {
+                      'input': '$tempTimesRegs', 
+                      'initialValue': '$$m.start', 
+                      'in': {
+                        '$cond': [
+                          {
+                            '$eq': [
+                              '$$this._id', '$$m._id'
+                            ]
+                          }, '$$this.trainee', []
+                        ]
+                      }
+                    }
+                  }
+                }, {
+                  'hubTrainee': {
+                    '$reduce': {
+                      'input': '$tempHubTimeRegs', 
+                      'initialValue': '$$m.start', 
+                      'in': {
+                        '$cond': [
+                          {
+                            '$eq': [
+                              '$$this._id', '$$m._id'
+                            ]
+                          }, '$$this.hubTrainee', []
+                        ]
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
         }
       }
-    }
-  }, {
-    '$group': {
-      '_id': '$_id', 
-      'dupTimesWithTrainee': {
-        '$push': '$timesWithRegs'
-      }, 
-      'newRoot': {
-        '$first': '$$ROOT'
+    }, {
+      '$group': {
+        '_id': '$_id', 
+        'dupTimesWithTrainee': {
+          '$push': '$timesWithRegs'
+        }, 
+        'newRoot': {
+          '$first': '$$ROOT'
+        }
       }
-    }
-  }, {
-    '$unwind': {
-      'path': '$dupTimesWithTrainee', 
-      'preserveNullAndEmptyArrays': true
-    }
-  }, {
-    '$unwind': {
-      'path': '$dupTimesWithTrainee', 
-      'preserveNullAndEmptyArrays': true
-    }
-  }, {
-    '$group': {
-      '_id': '$dupTimesWithTrainee._id', 
-      'trainies': {
-        '$push': '$dupTimesWithTrainee.traniee'
-      }, 
-      'hubTrainies': {
-        '$first': '$dupTimesWithTrainee.hubTraniee'
-      }, 
-      'newRoot': {
-        '$first': '$$ROOT.newRoot'
+    }, {
+      '$unwind': {
+        'path': '$dupTimesWithTrainee', 
+        'preserveNullAndEmptyArrays': true
       }
-    }
-  }, {
-    '$addFields': {
-      'timesWithRegs': {
-        '$map': {
-          'input': '$newRoot.times', 
-          'as': 'm', 
-          'in': {
+    }, {
+      '$unwind': {
+        'path': '$dupTimesWithTrainee', 
+        'preserveNullAndEmptyArrays': true
+      }
+    }, {
+      '$group': {
+        '_id': '$dupTimesWithTrainee._id', 
+        'trainees': {
+          '$push': {
             '$cond': [
               {
-                '$eq': [
-                  '$$m._id', '$_id'
+                '$gt': [
+                  {
+                    '$size': '$dupTimesWithTrainee.trainee.length'
+                  }, 0
                 ]
-              }, {
-                '$mergeObjects': [
-                  '$$m', {
-                    'traniee': {
-                      '$reduce': {
-                        'input': '$trainies', 
-                        'initialValue': '$$m.start', 
-                        'in': '$trainies'
-                      }
-                    }
-                  }, {
-                    'hubTraniee': {
-                      '$reduce': {
-                        'input': '$hubTrainies', 
-                        'initialValue': '$$m.start', 
-                        'in': '$hubTrainies'
-                      }
-                    }
-                  }
-                ]
-              }, null
+              }, '$dupTimesWithTrainee.trainee', null
             ]
+          }
+        }, 
+        'hubTrainees': {
+          '$push': {
+            '$cond': [
+              {
+                '$gt': [
+                  {
+                    '$size': '$dupTimesWithTrainee.hubTrainee'
+                  }, 0
+                ]
+              }, '$dupTimesWithTrainee.hubTrainee', null
+            ]
+          }
+        }, 
+        'newRoot': {
+          '$first': '$$ROOT.newRoot'
+        }
+      }
+    }, {
+      '$addFields': {
+        'timesWithRegs': {
+          '$map': {
+            'input': '$newRoot.times', 
+            'as': 'm', 
+            'in': {
+              '$cond': [
+                {
+                  '$eq': [
+                    '$$m._id', '$_id'
+                  ]
+                }, {
+                  '$mergeObjects': [
+                    '$$m', {
+                      'trainee': {
+                        '$reduce': {
+                          'input': '$trainees', 
+                          'initialValue': '$$m.start', 
+                          'in': {
+                            '$cond': [
+                              {
+                                '$gt': [
+                                  {
+                                    '$size': '$trainees'
+                                  }, 0
+                                ]
+                              }, {
+                                '$ifNull': [
+                                  {
+                                    '$first': '$trainees'
+                                  }, []
+                                ]
+                              }, []
+                            ]
+                          }
+                        }
+                      }
+                    }, {
+                      'hubTrainee': {
+                        '$reduce': {
+                          'input': '$hubTrainees', 
+                          'initialValue': '$$m.start', 
+                          'in': {
+                            '$cond': [
+                              {
+                                '$gt': [
+                                  {
+                                    '$size': '$hubTrainees'
+                                  }, 0
+                                ]
+                              }, {
+                                '$ifNull': [
+                                  {
+                                    '$first': '$hubTrainees'
+                                  }, []
+                                ]
+                              }, []
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }, null
+              ]
+            }
           }
         }
       }
-    }
-  }, {
-    '$group': {
-      '_id': '$newRoot._id', 
-      'newRoot': {
-        '$first': '$$ROOT.newRoot'
-      }, 
-      'timesWithRegs': {
-        '$push': '$timesWithRegs'
+    }, {
+      '$group': {
+        '_id': '$newRoot._id', 
+        'newRoot': {
+          '$first': '$$ROOT.newRoot'
+        }, 
+        'timesWithRegs': {
+          '$push': '$timesWithRegs'
+        }
       }
-    }
-  }, {
-    '$unwind': {
-      'path': '$timesWithRegs', 
-      'preserveNullAndEmptyArrays': false
-    }
-  }, {
-    '$unwind': {
-      'path': '$timesWithRegs', 
-      'preserveNullAndEmptyArrays': false
-    }
-  }, {
-    '$group': {
-      '_id': '$timesWithRegs._id', 
-      'newRoot': {
-        '$first': '$$ROOT.newRoot'
-      }, 
-      'timesWithRegs': {
-        '$first': '$timesWithRegs'
+    }, {
+      '$unwind': {
+        'path': '$timesWithRegs', 
+        'preserveNullAndEmptyArrays': false
       }
-    }
-  }, {
-    '$group': {
-      '_id': '$newRoot._id', 
-      'newRoot': {
-        '$first': '$$ROOT.newRoot'
-      }, 
-      'timesWithRegsFinal': {
-        '$addToSet': '$timesWithRegs'
+    }, {
+      '$unwind': {
+        'path': '$timesWithRegs', 
+        'preserveNullAndEmptyArrays': false
       }
-    }
-  }, {
-    '$group': {
-      '_id': '$_id', 
-      'newHubClass': {
-        '$first': '$$ROOT'
+    }, {
+      '$group': {
+        '_id': '$timesWithRegs._id', 
+        'newRoot': {
+          '$first': '$$ROOT.newRoot'
+        }, 
+        'timesWithRegs': {
+          '$first': '$timesWithRegs'
+        }
       }
-    }
-  }, {
-    '$replaceRoot': {
-      'newRoot': {
-        '$mergeObjects': [
-          '$newHubClass'
-        ]
+    }, {
+      '$group': {
+        '_id': '$newRoot._id', 
+        'newRoot': {
+          '$first': '$$ROOT.newRoot'
+        }, 
+        'timesWithRegsFinal': {
+          '$addToSet': '$timesWithRegs'
+        }
       }
-    }
-  }, {
-    '$addFields': {
-      'timesOBJ': {
-        'times': '$timesWithRegsFinal'
+    }, {
+      '$group': {
+        '_id': '$_id', 
+        'newHubClass': {
+          '$first': '$$ROOT'
+        }
       }
-    }
-  }, {
-    '$replaceRoot': {
-      'newRoot': {
-        '$mergeObjects': [
-          '$newRoot', '$timesOBJ'
-        ]
+    }, {
+      '$replaceRoot': {
+        'newRoot': {
+          '$mergeObjects': [
+            '$newHubClass'
+          ]
+        }
       }
-    }
-  }, {
-    '$unset': [
-      'timesWithRegs', 'tempTimesRegs', 'tempTimes', 'registrations', 'tempHubTimeRegs'
-    ]
-  },{$project}
+    }, {
+      '$addFields': {
+        'timesOBJ': {
+          'times': '$timesWithRegsFinal'
+        }
+      }
+    }, {
+      '$replaceRoot': {
+        'newRoot': {
+          '$mergeObjects': [
+            '$newRoot', '$timesOBJ'
+          ]
+        }
+      }
+    }, {
+      '$unset': [
+        'timesWithRegs', 'tempTimesRegs', 'tempTimes', 'registrations'
+      ]
+    },{$project}
   ];
 
   const hubClass = await HubClass.aggregate(querys).exec(); 
