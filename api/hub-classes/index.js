@@ -126,49 +126,6 @@ exports.bookedResources = async function (n, HubClass, compiledQuery) {
     ...optionalStages,
     {
       '$lookup': {
-        'from': 'hubregistrations', 
-        'let': {
-          'hubClass': '$_id'
-        }, 
-        'as': 'hubRegistrations', 
-        'pipeline': [
-          {
-            '$match': {
-              '$or': [
-                {
-                  'start': {
-                    '$gte': lookbackStart, 
-                    '$lte': lookbackEnd
-                  }
-                }, {
-                  'end': {
-                    '$gte': lookbackStart, 
-                    '$lte': lookbackEnd
-                  }
-                }
-              ], 
-              '$expr': {
-                '$eq': [
-                  '$hubClass', '$$hubClass'
-                ]
-              }
-            }
-          }, {
-            '$project': {
-              'start': '$start', 
-              'end': '$end', 
-              'participantCount': {
-                '$sum': {
-                  '$size': '$participants'
-                }
-              }, 
-              'participants': '$participants'
-            }
-          }
-        ]
-      }
-    }, {
-      '$lookup': {
         'from': 'registrations', 
         'let': {
           'hubClass': '$_id'
@@ -205,12 +162,7 @@ exports.bookedResources = async function (n, HubClass, compiledQuery) {
         'path': '$registrations', 
         'preserveNullAndEmptyArrays': true
       }
-    }, {
-      '$unwind': {
-        'path': '$hubRegistrations', 
-        'preserveNullAndEmptyArrays': true
-      }
-    }, {
+    },{
       '$addFields': {
         'tempTimesRegs': [
           {
@@ -238,35 +190,7 @@ exports.bookedResources = async function (n, HubClass, compiledQuery) {
           }
         ]
       }
-    }, {
-      '$addFields': {
-        'tempHubTimeRegs': [
-          {
-            '$mergeObjects': [
-              {
-                '$concatArrays': [
-                  {
-                    '$filter': {
-                      'input': '$times', 
-                      'as': 'time', 
-                      'cond': {
-                        '$eq': [
-                          '$$time.start', '$hubRegistrations.start'
-                        ]
-                      }
-                    }
-                  }, [
-                    {
-                      'hubTrainee': '$hubRegistrations.participants'
-                    }
-                  ]
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    }, {
+    },{
       '$addFields': {
         'timesWithRegs': {
           '$map': {
@@ -286,22 +210,6 @@ exports.bookedResources = async function (n, HubClass, compiledQuery) {
                               '$$this._id', '$$m._id'
                             ]
                           }, '$$this.trainee', []
-                        ]
-                      }
-                    }
-                  }
-                }, {
-                  'hubTrainee': {
-                    '$reduce': {
-                      'input': '$tempHubTimeRegs', 
-                      'initialValue': '$$m.start', 
-                      'in': {
-                        '$cond': [
-                          {
-                            '$eq': [
-                              '$$this._id', '$$m._id'
-                            ]
-                          }, '$$this.hubTrainee', []
                         ]
                       }
                     }
@@ -348,19 +256,6 @@ exports.bookedResources = async function (n, HubClass, compiledQuery) {
             ]
           }
         }, 
-        'hubTrainees': {
-          '$push': {
-            '$cond': [
-              {
-                '$gt': [
-                  {
-                    '$size': '$dupTimesWithTrainee.hubTrainee'
-                  }, 0
-                ]
-              }, '$dupTimesWithTrainee.hubTrainee', null
-            ]
-          }
-        }, 
         'newRoot': {
           '$first': '$$ROOT.newRoot'
         }
@@ -396,30 +291,6 @@ exports.bookedResources = async function (n, HubClass, compiledQuery) {
                                 '$ifNull': [
                                   {
                                     '$first': '$trainees'
-                                  }, []
-                                ]
-                              }, []
-                            ]
-                          }
-                        }
-                      }
-                    }, {
-                      'hubTrainee': {
-                        '$reduce': {
-                          'input': '$hubTrainees', 
-                          'initialValue': '$$m.start', 
-                          'in': {
-                            '$cond': [
-                              {
-                                '$gt': [
-                                  {
-                                    '$size': '$hubTrainees'
-                                  }, 0
-                                ]
-                              }, {
-                                '$ifNull': [
-                                  {
-                                    '$first': '$hubTrainees'
                                   }, []
                                 ]
                               }, []
@@ -504,7 +375,7 @@ exports.bookedResources = async function (n, HubClass, compiledQuery) {
           ]
         }
       }
-    }, {
+    },{
       '$unset': [
         'timesWithRegs', 'tempTimesRegs', 'tempTimes', 'registrations'
       ]
