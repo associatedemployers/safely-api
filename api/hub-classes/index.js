@@ -104,6 +104,14 @@ exports.bookedResources = async function (n, HubClass, compiledQuery) {
 
   let optionalStages = [];
 
+  if (query) {
+    optionalStages.push({
+      $match: {
+        ...query || {}
+      }
+    });
+  }
+
   if (sort) {
     optionalStages.push({
       $sort: {
