@@ -209,7 +209,7 @@ exports.bookedResources = async function (n, HubClass, compiledQuery) {
                             '$eq': [
                               '$$this._id', '$$m._id'
                             ]
-                          }, '$$this.trainee', []
+                          }, ['$$this.trainee'], []
                         ]
                       }
                     }
@@ -249,7 +249,7 @@ exports.bookedResources = async function (n, HubClass, compiledQuery) {
               {
                 '$gt': [
                   {
-                    '$size': '$dupTimesWithTrainee.trainee.length'
+                    '$size': '$dupTimesWithTrainee.trainee'
                   }, 0
                 ]
               }, '$dupTimesWithTrainee.trainee', null
