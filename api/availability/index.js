@@ -28,7 +28,8 @@ function getWeekNums (momentObj) {
   return moment.duration(end - start).weeks();
 }
 
-let findBlocks = time => AvailableTime.find({
+// cache
+const findBlocks = time => AvailableTime.find({
   $or: [{
     start: { $lte: time },
     end: { $exists: false }
@@ -40,123 +41,118 @@ let findBlocks = time => AvailableTime.find({
     end: { $exists: false }
   }],
   days: { $in: [ moment(time).day() ] }
-}).lean().exec()
-  .reduce((b, t) => b.concat(t.blocks), []);
+}).select('blocks').lean().exec()
+  .reduce((b, t) => [...b, ...t.blocks ], []);
 
 exports.getAvailability = function*() {
-  try {
-    // Check the cache...
-    const cacheKey = JSON.stringify(this.request.body),
-          isCached = cache.peek(cacheKey);
+  yield (async () => {
+    try {
+      // Check the cache...
+      const cacheKey = JSON.stringify(this.request.body),
+            isCached = cache.peek(cacheKey);
 
-    if (isCached) {
-      this.status = 200;
-      this.body = JSON.parse(isCached);
-      return;
-    }
+      if (isCached) {
+        this.status = 200;
+        this.body = JSON.parse(isCached);
+        return;
+      }
 
-    const { month, year, showBackdate } = this.request.body;
+      const { month, year, showBackdate } = this.request.body;
 
-    let startFrom     = moment().month(parseFloat(month) - 1).year(year).startOf('month').startOf('day'),
-        lookbackStart = moment(startFrom).startOf('week').toDate(),
-        lookbackEnd   = moment(startFrom).endOf('month').endOf('week').toDate();
+      let startFrom     = moment().month(parseFloat(month) - 1).year(year).startOf('month').startOf('day'),
+          lookbackStart = moment(startFrom).startOf('week').toDate(),
+          lookbackEnd   = moment(startFrom).endOf('month').endOf('week').toDate();
 
-    let blackouts = yield BlackoutDate.find({
-      $or: [{
-        start: { $gte: lookbackStart, $lte: lookbackEnd }
-      }, {
-        end: { $gte: lookbackStart, $lte: lookbackEnd }
-      }],
-      'classExceptions.0': { $exists: false }
-    }).lean().exec();
+      // these could be cached even more (memoize)
+      let blackouts = await BlackoutDate.find({
+        $or: [{
+          start: { $gte: lookbackStart, $lte: lookbackEnd }
+        }, {
+          end: { $gte: lookbackStart, $lte: lookbackEnd }
+        }],
+        'classExceptions.0': { $exists: false }
+      }).lean().exec();
 
-    const findClassBlackout = (blockDate, block) => {
-      return BlackoutDate.find({
-        start: { $lte: blockDate },
-        end: { $gte: blockDate },
-        blocks: { $in: [ block ] }
-      })
-        .populate('classExceptions')
-        .then(classBlackouts => ({
-          classBlackouts,
-          exceptions: concat.apply(this, map(classBlackouts, blk => blk.toObject().classExceptions))
-        }));
-    };
+      // does this *really* need to be a new fn
+      const findClassBlackout = (blockDate, block) => {
+        return BlackoutDate.find({
+          start: { $lte: blockDate },
+          end: { $gte: blockDate },
+          blocks: { $in: [ block ] }
+        })
+          .populate('classExceptions')
+          .then(classBlackouts => ({
+            classBlackouts,
+            exceptions: concat.apply(this, map(classBlackouts, blk => blk.toObject().classExceptions))
+          }));
+      };
 
-    let filterBlocks = (day, blocks) => {
-      return Promise.map(blocks, (block) => {
-        let s = moment(day).hour(block[0]).startOf('hour').toDate();
 
-        if (!showBackdate && moment().isAfter(s)) {
-          return null;
-        }
+      // move outside route
+      const filterBlocks = async (day, blocks) => {
+        return await Promise.all(blocks.map(async (block) => {
+          const newBlock = [ ...block ];
+          let s = moment(day).hour(newBlock[0]).startOf('hour').toDate();
 
-        if (find(blackouts, blackout => day.hour(block[0]).isBetween(blackout.start, blackout.end, null, '[]'))) {
-          return null;
-        }
+          if (!showBackdate && moment().isAfter(s)) {
+            return null;
+          }
 
-        let end = moment(s).add(1, 'hour').endOf('hour');
+          if (find(blackouts, blackout => day.hour(newBlock[0]).isBetween(blackout.start, blackout.end, null, '[]'))) {
+            return null;
+          }
 
-        return Seat.countAvailableSeats(s, end)
-          .then(seats => {
-            return findClassBlackout(s, block)
-              .then(result => {
-                let _block = block.concat([{ seats }]);
+          const end = moment(s).add(1, 'hour').endOf('hour');
+          const seats = await Seat.countAvailableSeats(s, end);
+          const { exceptions, classBlackouts } = await findClassBlackout(s, newBlock);
+          const blockMetadata = { seats };
+          newBlock.push(blockMetadata);
+  
+          if (!exceptions.length) {
+            return newBlock;
+          }
+          const reduction = find(classBlackouts, b => !!b.seats); // b.seats is a value
+          const reduceByRegistrations = reduction && await Registration.count({
+            $or: [{
+              cancelledOn: null
+            }, {
+              cancelledOn: { $exists: false }
+            }],
+            'times.start': { $lte: s },
+            'times.end': { $gte: end },
+            classes: { $in: map(reduction.classExceptions, '_id') }
+          }).exec();
 
-                if (result.exceptions.length > 0) {
-                  const reduction = find(result.classBlackouts, b => !!b.seats);
-
-                  if (reduction) {
-                    return Registration.count({
-                      $or: [{
-                        cancelledOn: null
-                      }, {
-                        cancelledOn: { $exists: false }
-                      }],
-                      'times.start': { $lte: s },
-                      'times.end': { $gte: end },
-                      classes: { $in: map(reduction.classExceptions, '_id') }
-                    }).then(registrations => {
-                      Object.assign(_block[_block.length - 1], {
-                        registrations,
-                        onlyClasses: result.exceptions,
-                        reduceSeats: reduction.seats - registrations
-                      });
-
-                      return _block;
-                    });
-                  } else {
-                    Object.assign(_block[_block.length - 1], {
-                      onlyClasses: result.exceptions
-                    });
-                  }
-                }
-
-                return _block;
-              });
+          Object.assign(blockMetadata, {
+            onlyClasses: exceptions,
+            ...reduction && {
+              registrations: reduceByRegistrations,
+              reduceSeats: reduction.seats - reduceByRegistrations
+            }
           });
-      })
-        .filter(b => b !== null);
-    };
+        }).filter(Boolean));
+      };
 
-    const body = {
-      availability: yield range(getWeekNums(startFrom) + 1).map(w => {
-        return Promise.reduce(range(7), (week, di) => {
-          let day = moment(startFrom).add(w, 'week').day(di);
+      const availability = [];
 
-          return findBlocks(day)
-            .then(blocks => filterBlocks(day, blocks))
-            .then(fb => [ ...week, fb ]);
-        }, []);
-      })
-    };
+      for (let w = 0; w < getWeekNums(startFrom) + 1; w++) {
+        const days = await Promise.all([ ...new Array(7) ].map(async (di) => {
+          const day = moment(startFrom).add(w, 'week').day(di);
+          return await filterBlocks(day, await findBlocks(day));
+        }));
 
-    cache.set(cacheKey, JSON.stringify(body));
-    this.status = 200;
-    this.body = body;
-  } catch (err) {
-    error(`Error fetching availability: ${err}`);
-    error(err.stack);
-    throw err;
-  }
+        availability.push(days);
+      }
+
+      const body = { availability };
+
+      cache.set(cacheKey, JSON.stringify(body));
+      this.status = 200;
+      this.body = body;
+    } catch (err) {
+      error(`Error fetching availability: ${err}`);
+      error(err.stack);
+      throw err;
+    }
+  })();
 };
