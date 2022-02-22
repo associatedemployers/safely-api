@@ -12,7 +12,7 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
   const registrations = await Registration.find({
     trainee: { $in: traineeIds.map(x => ObjectId(x))}
   //TODO:// lookback times as well
-  }).populate('trainee');
+  }).populate('classes').populate('trainee');
 
   const hubRegistrations = await HubRegistration.aggregate([{
     $match: {
@@ -34,7 +34,24 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
         foreignField: '_id',
         as: 'participants'
       }
-  }, {
+  },
+  {
+    $lookup:
+      {
+        from: 'hubclasses',
+        localField: 'hubClass',
+        foreignField: '_id',
+        as: 'hubClass'
+      }
+  }, 
+  {$lookup:
+    {
+      from: 'hubclassinformations',
+      localField: 'hubClass.classInformation',
+      foreignField: '_id',
+      as: 'hubClass'
+    }
+  },{
     $project: {
       start:1,
       end:1,
