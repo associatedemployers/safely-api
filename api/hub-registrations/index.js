@@ -8,10 +8,12 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
       lookbackStart = moment(startFrom).startOf('week').toDate(),
       lookbackEnd   = moment(startFrom).endOf('month').endOf('week').toDate();
   let traineeIds = query.traineeIds;
-  
+
+  let $match = { participants: query.traineeIds && !query.getSeats ? { $in: traineeIds.map(x => ObjectId(x)) } : { $exists: true } };
+
   const registrations = await Registration.find({
     $or: [{
-      trainee: { $in: traineeIds.map(x => ObjectId(x))}
+      trainee: { $in: (traineeIds || []).map(x => ObjectId(x))}
     }, {
       trainee: { $type: 7 }
     }, {
@@ -31,7 +33,7 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
     $match: {
       $or:[{
         participants: {
-          $in: traineeIds.map(x => ObjectId(x))
+          $in: (traineeIds || []).map(x => ObjectId(x))
         }
       }, {
         participants: { $type: 4 }
@@ -57,14 +59,12 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
         as: 'hubClass'
       }
   }, { $addFields: {
-    seatsLeft: {$subtract: [{$size:'$participants'}, {$first:'$hubClass.seats'}]}
+    seatsLeft: {$subtract: [{$first:'$hubClass.seats'}, {$size:'$participants'}]}
   }
   }, {
     $unwind: '$participants'
   }, {
-    $match: {
-      participants:  { $in: traineeIds.map(x => ObjectId(x)) }
-    } // Filter unwanted participants
+    $match //filtering out participants we dont want
   }, {
     $lookup:
       {
