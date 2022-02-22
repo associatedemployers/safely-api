@@ -10,31 +10,34 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
   let traineeIds = query.traineeIds;
 
   let $match = { participants: query.traineeIds && !query.getSeats ? { $in: traineeIds.map(x => ObjectId(x)) } : { $exists: true } };
-
-  const registrations = await Registration.find({
-    $or: [{
-      trainee: { $in: (traineeIds || []).map(x => ObjectId(x))}
-    }, {
-      trainee: { $type: 7 }
-    }, {
-      start: {
-        $gte: lookbackStart, 
-        $lte: lookbackEnd
-      }
-    }, {
-      end: {
-        '$gte': lookbackStart, 
-        '$lte': lookbackEnd
-      }
-    }]
-  }).populate('classes').populate('trainee');
-
+  let participants = {$in: (traineeIds || []).map(x => ObjectId(x))};
+  let hubClass = query.getSeats && query.hubClass ? {$in: (query.hubClass || []).map(x => ObjectId(x))} : { $exists: true };
+  
+  let registrations = [];
+  if (!query.getSeats){
+    registrations = await Registration.find({
+      $or: [{
+        trainee: { $in: (traineeIds || []).map(x => ObjectId(x))}
+      }, {
+        trainee: { $type: 7 }
+      }, {
+        start: {
+          $gte: lookbackStart, 
+          $lte: lookbackEnd
+        }
+      }, {
+        end: {
+          '$gte': lookbackStart, 
+          '$lte': lookbackEnd
+        }
+      }]
+    }).populate('classes').populate('trainee');
+  }
+  
   const hubRegistrations = await HubRegistration.aggregate([{
     $match: {
       $or:[{
-        participants: {
-          $in: (traineeIds || []).map(x => ObjectId(x))
-        }
+        participants
       }, {
         participants: { $type: 4 }
       }, {
@@ -48,7 +51,8 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
           $lte: lookbackEnd
         }
       }],
-      cancelledOn: { $not: { $type: 9 } }
+      cancelledOn: { $not: { $type: 9 } },
+      hubClass
     }
   }, {
     $lookup:
