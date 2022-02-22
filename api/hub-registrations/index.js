@@ -10,22 +10,61 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
   let traineeIds = query.traineeIds;
   
   const registrations = await Registration.find({
-    trainee: { $in: traineeIds.map(x => ObjectId(x))}
-  //TODO:// lookback times as well
+    $or: [{
+      trainee: { $in: traineeIds.map(x => ObjectId(x))}
+    }, {
+      trainee: { $type: 7 }
+    }, {
+      start: {
+        $gte: lookbackStart, 
+        $lte: lookbackEnd
+      }
+    }, {
+      end: {
+        '$gte': lookbackStart, 
+        '$lte': lookbackEnd
+      }
+    }]
   }).populate('classes').populate('trainee');
 
   const hubRegistrations = await HubRegistration.aggregate([{
     $match: {
-    //TODO:// lookback times as well
-      participants: { $in: traineeIds.map(x => ObjectId(x)) },
-      cancelledOn: {$not:{$type:9}}
-    } // get me all the hubRegistrations with the participants I want
+      $or:[{
+        participants: {
+          $in: traineeIds.map(x => ObjectId(x))
+        }
+      }, {
+        participants: { $type: 4 }
+      }, {
+        start: {
+          $gte: lookbackStart, 
+          $lte: lookbackEnd
+        }
+      }, {
+        end: {
+          $gte: lookbackStart, 
+          $lte: lookbackEnd
+        }
+      }],
+      cancelledOn: { $not: { $type: 9 } }
+    }
+  }, {
+    $lookup:
+      {
+        from: 'hubclasses',
+        localField: 'hubClass',
+        foreignField: '_id',
+        as: 'hubClass'
+      }
+  }, { $addFields: {
+    seatsLeft: {$subtract: [{$size:'$participants'}, {$first:'$hubClass.seats'}]}
+  }
   }, {
     $unwind: '$participants'
-  }, { // unwind, some participants aren't what I want
+  }, {
     $match: {
       participants:  { $in: traineeIds.map(x => ObjectId(x)) }
-    } // filter out unwanted participants
+    } // Filter unwanted participants
   }, {
     $lookup:
       {
@@ -35,15 +74,6 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
         as: 'participants'
       }
   },
-  {
-    $lookup:
-      {
-        from: 'hubclasses',
-        localField: 'hubClass',
-        foreignField: '_id',
-        as: 'hubClass'
-      }
-  }, 
   {$lookup:
     {
       from: 'hubclassinformations',
@@ -56,7 +86,8 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
       start:1,
       end:1,
       participants:1,
-      hubClass: 1
+      hubClass: 1,
+      seatsLeft: 1
     }
   }]);
 
