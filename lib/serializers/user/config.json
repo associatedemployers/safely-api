@@ -4,7 +4,7 @@
   "discoveryQuery": "select Member.People.*, Safely.CompanyProfiles.MemberID from Member.People left join Safely.CompanyProfiles on Member.People.MemberID = Safely.CompanyProfiles.MemberID where Member.People.SafelyID is null and Member.People.[E-Mail] is not null and Safely.CompanyProfiles.MemberID is not null",
   "values": {
     "email": "E-Mail",
-    "hubUser": "hubUser"
+    "hubUser": "Hub-User"
   },
   "relationships": {
     "company": "Company"
