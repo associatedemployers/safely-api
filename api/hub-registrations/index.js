@@ -4,9 +4,9 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
         { query } = compiledQuery;
   var ObjectId = require('mongodb').ObjectId; 
 
-  let startFrom     = moment().startOf('month').startOf('day'),
-      lookbackStart = moment(startFrom).startOf('week').toDate(),
-      lookbackEnd   = moment(startFrom).endOf('month').endOf('week').toDate();
+  let startFrom     = query.statFrom || moment().startOf('month').startOf('day'),
+      lookbackStart = query.lookbackStart || moment(startFrom).startOf('week').toDate(),
+      lookbackEnd   = query.lookbackEnd || moment(startFrom).endOf('month').endOf('week').toDate();
   let traineeIds = query.traineeIds;
 
   let $match = { participants: query.traineeIds && !query.getSeats ? { $in: traineeIds.map(x => ObjectId(x)) } : { $exists: true } };
