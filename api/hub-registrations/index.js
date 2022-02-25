@@ -91,7 +91,15 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
       end:1,
       participants:1,
       hubClass: 1,
-      seatsLeft: 1
+      seatsLeft: 1,
+      address:1,
+      companyName:1,
+      firstName:1,
+      lastName:1,
+      email:1,
+      po:1,
+      total:1,
+      created:1
     }
   }]);
 
