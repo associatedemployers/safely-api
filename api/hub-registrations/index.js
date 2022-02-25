@@ -33,7 +33,7 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
       }]
     }).populate('classes').populate('trainee');
   }
-  
+  let cancelledOn = query.showCancellations ? { $type: 9 } :  { $not: { $type: 9 } };
   const hubRegistrations = await HubRegistration.aggregate([{
     $match: {
       $or:[{
@@ -51,7 +51,7 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
           $lte: lookbackEnd
         }
       }],
-      cancelledOn: { $not: { $type: 9 } },
+      cancelledOn,
       hubClass
     }
   }, {
@@ -99,7 +99,8 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
       email:1,
       po:1,
       total:1,
-      created:1
+      created:1,
+      cancelledOn:1
     }
   }]);
 
