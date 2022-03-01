@@ -1,0 +1,14 @@
+{
+  "table": "Safely.HubRegistrations",
+  "primaryKey": "HubRegistrationHeaderID",
+  "values": {
+    "start": "HubRegistrationDate",
+    "cancelledOn": "CancelledOn",
+    "comments": "Comment"
+  },
+  "onlyInclude": [
+    "RegistrationDate",
+    "CancelledOn",
+    "Comment"
+  ]
+}

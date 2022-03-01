@@ -1,0 +1,10 @@
+{
+  "table": "Training.HubCoursesInfo",
+  "primaryKey": "HubCoursesInfoID",
+  "values": {
+    "name": "Name",
+    "code": "ClassCode",
+    "created": "ModifiedDate",
+    "description": "Description"
+  }
+}
