@@ -4,9 +4,9 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
         { query } = compiledQuery;
   var ObjectId = require('mongodb').ObjectId; 
 
-  let startFrom     = moment(query.statFrom).toDate() || moment().startOf('month').startOf('day'),
-      lookbackStart = moment(query.lookbackStart).toDate() || moment(startFrom).startOf('week').toDate(),
-      lookbackEnd   = moment(query.lookbackEnd).toDate() || moment(startFrom).endOf('month').endOf('week').toDate();
+  let startFrom     = query.startFrom ? moment(query.startFrom).toDate() : moment().startOf('month').startOf('day'),
+      lookbackStart = query.lookbackStart ? moment(query.lookbackStart).toDate() : moment(startFrom).startOf('week').toDate(),
+      lookbackEnd   = query.lookbackEnd ? moment(query.lookbackEnd).toDate() : moment(startFrom).endOf('month').endOf('week').toDate();
   let traineeIds = query.traineeIds;
 
   let $match = { participants: query.traineeIds && !query.getSeats ? { $in: traineeIds.map(x => ObjectId(x)) } : { $exists: true } };
@@ -17,55 +17,50 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
   if (!query.getSeats){
     registrations = await Registration.find({
       $or: [{
-        trainee: { $in: (traineeIds || []).map(x => ObjectId(x))}
+        trainee: { $in: (traineeIds || []).map(x => ObjectId(x)) }
       }, {
         trainee: { $type: 7 }
       }],
-      $and: [{
-        start: {
-          $gte: lookbackStart, 
-          $lte: lookbackEnd
-        }
-      }, {
-        end: {
-          $gte: lookbackStart, 
-          $lte: lookbackEnd
-        }
-      }]
+      start: {
+        $gte: lookbackStart, 
+        $lte: lookbackEnd
+      },
+      end: {
+        $gte: lookbackStart, 
+        $lte: lookbackEnd
+      }
     }).populate('classes').populate('trainee');
   }
+
   let cancelledOn = query.showCancellations ? { $type: 9 } :  { $not: { $type: 9 } };
-  const hubRegistrations = await HubRegistration.aggregate([{
+  const hubRegistrations = await HubRegistration.aggregate([ {
     $match: {
-      $or:[{
+      $or:[ {
         participants
       }, {
         participants: { $type: 4 }
       }],
-      $and: [{
-        start: {
-          $gte: lookbackStart, 
-          $lte: lookbackEnd
-        }
-      }, {
-        end: {
-          $gte: lookbackStart, 
-          $lte: lookbackEnd
-        }
-      }],
+      start: {
+        $gte: lookbackStart, 
+        $lte: lookbackEnd
+      },
+      end: {
+        $gte: lookbackStart, 
+        $lte: lookbackEnd
+      },
       cancelledOn,
       hubClass
     }
   }, {
     $lookup:
       {
-        from: 'hubclasses',
-        localField: 'hubClass',
+        from:         'hubclasses',
+        localField:   'hubClass',
         foreignField: '_id',
-        as: 'hubClass'
+        as:           'hubClass'
       }
   }, { $addFields: {
-    seatsLeft: {$subtract: [{$first:'$hubClass.seats'}, {$size:'$participants'}]}
+    seatsLeft: { $subtract: [{ $first:'$hubClass.seats' }, { $size:'$participants' }] }
   }
   }, {
     $unwind: '$participants'
@@ -74,37 +69,37 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
   }, {
     $lookup:
       {
-        from: 'trainees',
-        localField: 'participants',
+        from:         'trainees',
+        localField:   'participants',
         foreignField: '_id',
-        as: 'participants'
+        as:           'participants'
       }
   },
-  {$lookup:
+  { $lookup:
     {
-      from: 'hubclassinformations',
-      localField: 'hubClass.classInformation',
+      from:         'hubclassinformations',
+      localField:   'hubClass.classInformation',
       foreignField: '_id',
-      as: 'hubClass'
+      as:           'hubClass'
     }
   },{
     $project: {
-      start:1,
-      end:1,
-      participants:1,
-      hubClass: 1,
-      seatsLeft: 1,
-      address:1,
-      companyName:1,
-      firstName:1,
-      lastName:1,
-      email:1,
-      po:1,
-      total:1,
-      created:1,
-      cancelledOn:1
+      start:        1,
+      end:          1,
+      participants: 1,
+      hubClass:     1,
+      seatsLeft:    1,
+      address:      1,
+      companyName:  1,
+      firstName:    1,
+      lastName:     1,
+      email:        1,
+      po:           1,
+      total:        1,
+      created:      1,
+      cancelledOn:  1
     }
-  }]);
+  } ]);
 
   return [
     ...hubRegistrations,
