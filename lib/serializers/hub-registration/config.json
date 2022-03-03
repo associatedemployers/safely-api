@@ -4,11 +4,13 @@
   "values": {
     "start": "HubRegistrationDate",
     "cancelledOn": "CancelledOn",
-    "comments": "Comment"
+    "comments": "Comment",
+    "hubClass": "HubClass"
   },
   "onlyInclude": [
-    "RegistrationDate",
+    "HubRegistrationDate",
     "CancelledOn",
-    "Comment"
+    "Comment",
+    "HubClass"
   ]
 }
