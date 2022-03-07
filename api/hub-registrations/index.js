@@ -6,13 +6,13 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
 
   let startFrom     = query.startFrom ? moment(query.startFrom).toDate() : moment().startOf('month').startOf('day'),
       lookbackStart = query.lookbackStart ? moment(query.lookbackStart).toDate() : moment(startFrom).startOf('week').toDate(),
-      lookbackEnd   = query.lookbackEnd ? moment(query.lookbackEnd).toDate() : moment(startFrom).endOf('month').endOf('week').toDate();
+      lookbackEnd   = query.lookbackEnd ? moment(query.lookbackEnd).toDate() : moment(startFrom).add(6,'months').endOf('month').endOf('week').toDate();
   let traineeIds = query.traineeIds;
 
   let $match = { participants: query.traineeIds && !query.getSeats ? { $in: traineeIds.map(x => ObjectId(x)) } : { $exists: true } };
   let participants = {$in: (traineeIds || []).map(x => ObjectId(x))};
   let hubClass = query.getSeats && query.hubClass ? {$in: (query.hubClass || []).map(x => ObjectId(x))} : { $exists: true };
-  
+
   let registrations = [];
   if (!query.getSeats){
     registrations = await Registration.find({
