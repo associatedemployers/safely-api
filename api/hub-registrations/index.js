@@ -59,13 +59,33 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
         foreignField: '_id',
         as:           'hubClass'
       }
-  }, { $addFields: {
-    seatsLeft: { $subtract: [{ $first:'$hubClass.seats' }, { $size:'$participants' }] }
-  }
-  }, {
+  },  {
     $unwind: '$participants'
   }, {
     $match //filtering out participants we dont want
+  }, { 
+    $group:
+    {
+      _id: {start:'$start',classId:{$first:'$hubClass._id'}},
+      registrationIds:{$push:'$_id'},
+      participants:{$push:'$participants'},
+      firstName:{$first:'$firstName'},
+      lastName:{$first:'$lastName'},
+      companyName:{$first:'$companyName'},
+      cancelledOn:{$first:'$cancelledOn'},
+      hubClass:{$first:'$hubClass'},
+      start:{$first:'$start'},
+      end:{$first:'$end'},
+      address:{$first:'$address'},
+      total:{$sum: '$total'},
+      isClassMember:{$first:'$isClassMember'},
+      po:{$push: {$ifNull:[null,'$po']}}
+    }},{
+    $addFields: {
+      seatsLeft: { $subtract: [{ $first:'$hubClass.seats' }, { $size:'$participants' }] }
+    } 
+  },  {
+    $unwind: '$participants'
   }, {
     $lookup:
       {
@@ -80,10 +100,11 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
       from:         'hubclassinformations',
       localField:   'hubClass.classInformation',
       foreignField: '_id',
-      as:           'hubClass'
+      as:           'hubClassInfo'
     }
   },{
     $project: {
+      hubClassInfo: 1,
       start:        1,
       end:          1,
       participants: 1,
