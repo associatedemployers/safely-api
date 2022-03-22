@@ -5,12 +5,14 @@
     "start": "HubRegistrationDate",
     "cancelledOn": "CancelledOn",
     "comments": "Comment",
-    "hubClass": "HubClass"
+    "hubClass": "HubClass",
+    "creator": "Creator"
   },
   "onlyInclude": [
     "HubRegistrationDate",
     "CancelledOn",
     "Comment",
-    "HubClass"
+    "HubClass",
+    "Creator"
   ]
 }
