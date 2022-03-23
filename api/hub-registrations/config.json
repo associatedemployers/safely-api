@@ -7,5 +7,10 @@
     "name": "bookedResources",
     "type": "index",
     "bypassInitialQuery": true
-  }]
+  }],
+  "crudOptions": {
+    "all": {
+      "forceCompanyQueryMerge": false
+    }
+  }
 }

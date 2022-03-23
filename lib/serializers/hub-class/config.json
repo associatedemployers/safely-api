@@ -7,7 +7,7 @@
     "code": "ClassCode",
     "created": "Created",
     "classInformation": "HubCoursesInfoID",
-    "price.nonMember": "RegularPrice" 
+    "price": "RegularPrice" 
      },
   "onlyInclude": ["ClassCode", "Created","HubCoursesInfoID", "ClassCode", "Instructor", "HubCoursesID", "RegularPrice"]
 }
