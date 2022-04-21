@@ -22,41 +22,44 @@
                     </tr>
                   </tbody>
                 </table>
-
+                
+                <hr>
                 <table class="row">
-                  <table>
-                    <thead>
-                      <th>Company</th>
-                      <th>Name</th>
-                      <th>Email</th>
-                      <th>Member</th>
-                    </thead>
-                    <tbody>
-                      {{#each registrations as |registration|}}
-                        <tr>
-                          <td>
-                            {{registration.companyName}}
-                          </td>
-                          <td>
-                            {{registration.participant.firstName}}
-                            {{registration.participant.lastName}}
-                          </td>
-                          <td>
-                            {{registration.participant.email}}
-                          </td>
-                          <td>
-                            {{#if registration.isClassMember}}
-                              Y
-                            {{else}}
-                              N
-                            {{/if}}
-                          </td>
-                        </tr>
-                      {{else}}
-                        <tr><td colspan="4">No Participants.</td></tr>
-                      {{/each}}
-                    </tbody>
-                  </table>
+                  {{#if registrations}}
+                    <table>
+                      <thead>
+                        <th>Company</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Member</th>
+                      </thead>
+                      <tbody>
+                        {{#each registrations as |registration|}}
+                          <tr>
+                            <td>
+                              {{registration.companyName}}
+                            </td>
+                            <td>
+                              {{registration.participant.firstName}}
+                              {{registration.participant.lastName}}
+                            </td>
+                            <td>
+                              {{registration.participant.email}}
+                            </td>
+                            <td>
+                              {{if registration.isClassMember "Y" "N"}}
+                            </td>
+                          </tr>
+                        {{/each}}
+                      </tbody>
+                    </table>
+                  {{else}}
+                    <table align="center" class="float-center">
+                      <tr>
+                        <td class="center">No Participants</td>
+                      </tr>
+                    </table>
+                  {{/if}}
                 </table>
 
                 <table class="row">

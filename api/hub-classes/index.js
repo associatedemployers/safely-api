@@ -36,8 +36,7 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
 
   const hubClass = await HubClass.aggregate([{
     $match: {
-      ...query || {},
-      'times.0.start': { $gte: new Date() }
+      ...query || {'times.0.start': { $gte: new Date() } }
     }
   },
   ...optionalStages,

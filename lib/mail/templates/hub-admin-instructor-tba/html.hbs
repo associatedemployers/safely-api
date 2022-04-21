@@ -1,0 +1,84 @@
+<table class="body">
+  <tr>
+    <td class="float-center" align="center" valign="top">
+      <center data-parsed="">
+        {{> "hub-warning"}}
+        {{> "hub-header"}}
+        <table align="center" class="container body-drip float-center">
+          <tbody>
+            <tr>
+              <td>
+                <table class="spacer">
+                  <tbody>
+                    <tr>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <table class="row">
+                  <tbody>
+                    <tr class="center small-12 large-12 columns first last">
+                      <td><h2 class="float center">{{inflect-text "Instructors" hubClassesNoInstructor.length}} required for the following {{inflect-text "classes" hubClassesNoInstructor.length}}</h2></td>
+                    </tr>
+                  </tbody>
+                </table>
+                
+                <hr>
+                <table class="row">
+                  <table>
+                    <thead>
+                      <th>Class</th>
+                      <th>Location</th>
+                    </thead>
+                    <tbody>
+                      {{#each hubClassesNoInstructor as |hubClass|}}
+                        <tr>
+                          <td>
+                            <a href="https://lab.mssc.org/hub/roster/{{hubClass._id}}?key={{hubClass.rosterAccessKey}}">{{hubClass.classInformation.name}}</a>
+                          </td>
+                          <td>
+                            {{#if hubClass.location.name}}
+                              {{hubClass.location.name}}
+                            {{/if}}
+                            {{#unless hubClass.location.name}}
+                              {{hubClass.location.address.city}}, {{hubClass.location.address.state}}
+                            {{/unless}}
+                          </td>
+                        </tr>
+                      {{/each}}
+                    </tbody>
+                  </table>
+                </table>
+
+                <table class="row collapsed footer">
+                  <tbody>
+                    <tr>
+                      <th class="small-12 large-12 columns first last">
+                        <table>
+                          <tr>
+                            <th>
+                              <table class="spacer">
+                                <tbody>
+                                  <tr>
+                                    <td height="16px" style="font-size:16px;line-height:16px;">&#xA0;</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                              <p class="text-center">&copy; Montana Safety Services Council & Associated Employers</p>
+                            </th>
+                            <th class="expander"></th>
+                          </tr>
+                        </table>
+                      </th>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </center>
+    </td>
+  </tr>
+</table>

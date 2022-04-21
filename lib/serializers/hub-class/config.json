@@ -1,0 +1,13 @@
+{
+  "table": "Training.HubCourses",
+  "primaryKey": "ID",
+  "values": {
+    "_id":"HubCoursesID",
+    "instructor": "Instructor",
+    "code": "ClassCode",
+    "created": "Created",
+    "classInformation": "HubCoursesInfoID",
+    "price": "RegularPrice" 
+     },
+  "onlyInclude": ["ClassCode", "Created","HubCoursesInfoID", "ClassCode", "Instructor", "HubCoursesID", "RegularPrice"]
+}

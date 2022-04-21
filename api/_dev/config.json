@@ -2,6 +2,6 @@
   "name": "_dev",
   "description": "development api endpoint",
   "routes": {
-    "POST /_dev/template/:name": "testEmail"
+    "GET /_dev/template/:name": "testEmail"
   }
 }

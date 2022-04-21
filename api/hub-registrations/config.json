@@ -2,5 +2,15 @@
   "name": "hub-registrations",
   "description": "hub registration resource endpoint",
   "ops": "crud",
-  "securedOps": "rud"
+  "securedOps": "rud",
+    "reports": [{
+    "name": "bookedResources",
+    "type": "index",
+    "bypassInitialQuery": true
+  }],
+  "crudOptions": {
+    "all": {
+      "forceCompanyQueryMerge": false
+    }
+  }
 }
