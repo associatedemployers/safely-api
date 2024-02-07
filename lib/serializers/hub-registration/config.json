@@ -6,13 +6,15 @@
     "cancelledOn": "CancelledOn",
     "comments": "Comment",
     "hubClass": "HubClass",
-    "creator": "Creator"
+    "creator": "Creator",
+    "companyName": "CompanyName"
   },
   "onlyInclude": [
     "HubRegistrationDate",
     "CancelledOn",
     "Comment",
     "HubClass",
-    "Creator"
+    "Creator",
+    "CompanyName"
   ]
 }
