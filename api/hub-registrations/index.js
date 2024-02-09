@@ -16,11 +16,7 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
   let registrations = [];
   if (!query.getSeats){
     registrations = await Registration.find({
-      $or: [{
-        trainee: { $in: (traineeIds || []).map(x => ObjectId(x)) }
-      }, {
-        trainee: { $type: 7 }
-      }],
+      trainee: { $in: (traineeIds || []).map(x => ObjectId(x)) },
       start: {
         $gte: lookbackStart, 
         $lte: lookbackEnd
