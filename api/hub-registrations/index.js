@@ -14,6 +14,8 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
   let hubClass = query.getSeats && query.hubClass ? {$in: (query.hubClass || []).map(x => ObjectId(x))} : { $exists: true };
 
   let registrations = [];
+  let cancelledOn = query.showCancellations ? { $type: 9 } :  { $not: { $type: 9 } };
+
   if (!query.getSeats){
     registrations = await Registration.find({
       trainee: { $in: (traineeIds || []).map(x => ObjectId(x)) },
@@ -24,11 +26,11 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
       end: {
         $gte: lookbackStart, 
         $lte: lookbackEnd
-      }
+      },
+      cancelledOn
     }).populate('classes').populate('trainee');
   }
 
-  let cancelledOn = query.showCancellations ? { $type: 9 } :  { $not: { $type: 9 } };
   const hubRegistrations = await HubRegistration.aggregate([ {
     $match: {
       $or:[ {
