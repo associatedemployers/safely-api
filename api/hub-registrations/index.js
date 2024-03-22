@@ -33,7 +33,7 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
 
   const hubRegistrations = await HubRegistration.aggregate([ {
     $match: {
-      $or:[ {
+      $or:[{
         participants
       }, {
         participants: { $type: 4 }
@@ -76,14 +76,14 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
           participant: '$participants'
         },
       },
-      cancelledOn:{$first:'$cancelledOn'},
-      hubClass:{$first:'$hubClass'},
-      start:{$first:'$start'},
-      end:{$first:'$end'},
-      address:{$first:'$address'},
-      total:{$sum: '$total'},
-      isClassMember:{$first:'$isClassMember'},
-      po:{$push: {$ifNull:[null,'$po']}}
+      cancelledOn:   { $first:'$cancelledOn' },
+      hubClass:      { $first:'$hubClass' },
+      start:         { $first:'$start' },
+      end:           { $first:'$end' },
+      address:       { $first:'$address' },
+      total:         { $sum: '$total' },
+      isClassMember: { $first:'$isClassMember' },
+      po:            { $push: { $ifNull:[null,'$po'] } }
     }},{
     $addFields: {
       seatsLeft: { $subtract: [{ $first:'$hubClass.seats' }, { $size:'$participants' }] }
@@ -93,19 +93,19 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
   }, {
     $replaceRoot: {
       newRoot: {
-        $mergeObjects: [ "$$ROOT", "$uniqueHRegs" ]
+        $mergeObjects: [ '$$ROOT', '$uniqueHRegs' ]
       }
     }
   }, {
     $lookup: {
-      from: "companies",
-      localField: "company",
-      foreignField: "_id",
-      as: 'c',
+      from:         'companies',
+      localField:   'company',
+      foreignField: '_id',
+      as:           'c',
       pipeline: [
         {
           $project: {
-            _id: 0,
+            _id:  0,
             name: 1,
           },
         },
@@ -114,7 +114,7 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
   }, {
     $addFields: {
       companyName: {
-        $first: "$c.name",
+        $first: '$c.name',
       },
     }
   }, {
