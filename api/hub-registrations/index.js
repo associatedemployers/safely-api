@@ -33,7 +33,7 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
 
   const hubRegistrations = await HubRegistration.aggregate([ {
     $match: {
-      $or:[ {
+      $or:[{
         participants
       }, {
         participants: { $type: 4 }
@@ -67,28 +67,61 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
       _id: {start:'$start',classId:{$first:'$hubClass._id'}},
       registrationIds:{$push:'$_id'},
       participants:{$push:'$participants'},
-      firstName:{$first:'$firstName'},
-      lastName:{$first:'$lastName'},
-      companyName:{$first:'$companyName'},
-      cancelledOn:{$first:'$cancelledOn'},
-      hubClass:{$first:'$hubClass'},
-      start:{$first:'$start'},
-      end:{$first:'$end'},
-      address:{$first:'$address'},
-      total:{$sum: '$total'},
-      isClassMember:{$first:'$isClassMember'},
-      po:{$push: {$ifNull:[null,'$po']}}
+      uniqueHRegs: {
+        $push: {
+          firstName:   '$firstName',
+          lastName:    '$lastName',
+          company:     '$company',
+          companyName: '$companyName',
+          participant: '$participants'
+        },
+      },
+      cancelledOn:   { $first:'$cancelledOn' },
+      hubClass:      { $first:'$hubClass' },
+      start:         { $first:'$start' },
+      end:           { $first:'$end' },
+      address:       { $first:'$address' },
+      total:         { $sum: '$total' },
+      isClassMember: { $first:'$isClassMember' },
+      po:            { $push: { $ifNull:[null,'$po'] } }
     }},{
     $addFields: {
       seatsLeft: { $subtract: [{ $first:'$hubClass.seats' }, { $size:'$participants' }] }
     } 
   },  {
-    $unwind: '$participants'
+    $unwind: '$uniqueHRegs'
+  }, {
+    $replaceRoot: {
+      newRoot: {
+        $mergeObjects: [ '$$ROOT', '$uniqueHRegs' ]
+      }
+    }
+  }, {
+    $lookup: {
+      from:         'companies',
+      localField:   'company',
+      foreignField: '_id',
+      as:           'c',
+      pipeline: [
+        {
+          $project: {
+            _id:  0,
+            name: 1,
+          },
+        },
+      ],
+    }
+  }, {
+    $addFields: {
+      companyName: {
+        $first: '$c.name',
+      },
+    }
   }, {
     $lookup:
       {
         from:         'trainees',
-        localField:   'participants',
+        localField:   'participant',
         foreignField: '_id',
         as:           'participants'
       }
