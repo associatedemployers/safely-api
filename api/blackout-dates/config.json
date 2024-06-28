@@ -1,14 +1,14 @@
 {
   "name": "blackout_date",
   "description": "blackout date administrative resource endpoint",
-  "secure": true,
+  "securedOps": "cud",
   "authorizationOptions": {
     "administrative": true
   },
   "ops": "crud",
   "crudOptions": {
     "update": {
-      "explicitKeys": [ "blocks", "classExceptions" ]
+      "explicitKeys": [ "blocks", "classExceptions", "hubClassExceptions" ]
     }
   }
 }
