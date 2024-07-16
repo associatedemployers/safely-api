@@ -3,8 +3,12 @@
   "description": "hub registration resource endpoint",
   "ops": "crud",
   "securedOps": "rud",
-    "reports": [{
+  "reports": [{
     "name": "bookedResources",
+    "type": "index",
+    "bypassInitialQuery": true
+  }, {
+    "name": "report",
     "type": "index",
     "bypassInitialQuery": true
   }],

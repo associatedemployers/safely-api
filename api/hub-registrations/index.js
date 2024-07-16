@@ -74,7 +74,7 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
           company:     '$company',
           companyName: '$companyName',
           participant: '$participants'
-        },
+        }
       },
       cancelledOn:   { $first:'$cancelledOn' },
       hubClass:      { $first:'$hubClass' },
@@ -106,16 +106,16 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
         {
           $project: {
             _id:  0,
-            name: 1,
-          },
-        },
-      ],
+            name: 1
+          }
+        }
+      ]
     }
   }, {
     $addFields: {
       companyName: {
-        $first: '$c.name',
-      },
+        $first: '$c.name'
+      }
     }
   }, {
     $lookup:
@@ -158,3 +158,22 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
     ...registrations
   ];
 };
+
+//! Returns an array of each hub-registration
+// Should be an array of objects, but only with the start-time, end-time
+exports.report = async function (id) {
+  const HubRegistration  = require('../../lib/models/hub-registration');
+  const moment = require('moment');
+
+  const hubRegistrations = (await HubRegistration.find({
+    hubClass: '65b2a058f803f0fdff1ba694', // @fixme: hard-coded
+    start: {
+      $gte: moment() 
+    }
+  })).map(({ start, end }) => ({ start, end }));
+  console.log('!!!HubRegistrations', hubRegistrations);
+
+  return hubRegistrations;
+  // Takes the ID of the hub-class
+  // Queries all the hub-registrations that are greater than today
+}; 
