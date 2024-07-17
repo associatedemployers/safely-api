@@ -158,15 +158,3 @@ exports.bookedResources = async function (n, HubRegistration, compiledQuery) {
     ...registrations
   ];
 };
-
-exports.report = async function (id) {
-  const HubRegistration  = require('../../lib/models/hub-registration');
-  const moment = require('moment');
-
-  return (await HubRegistration.find({
-    hubClass: id,
-    start: {
-      $gte: moment() 
-    }
-  })).map(({ start, end }) => ({ start, end }));
-}; 

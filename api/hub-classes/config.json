@@ -11,6 +11,10 @@
     "name": "withAvailability",
     "type": "index",
     "bypassInitialQuery": true
+  }, {
+    "name": "bookedTimeBlocks",
+    "type": "index",
+    "bypassInitialQuery": true
   }],
   "crudOptions": {
     "all": {

@@ -78,3 +78,32 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
     hubClass
   };
 };
+
+exports.bookedTimeBlocks = async function (n, HubClass, compiledQuery) {
+  const { query } = compiledQuery;
+  const HubRegistration  = require('../../lib/models/hub-registration');
+  const moment = require('moment');
+
+  const hubRegistrations = await HubRegistration.find({
+    hubClass: query.id,
+    start: {
+      $gte: moment() 
+    }
+  });
+
+  const timeBlocks = hubRegistrations.reduce((acc, value) => {
+    const updatedAcc = [ ...acc ];
+    const foundIndex = acc.findIndex(({ start, end }) => start.toISOString() === value.start.toISOString() && end.toISOString() === value.end.toISOString());
+
+    if (foundIndex >= 0) {
+      const count = value.hubParticipants.length + value.participants.length;
+      acc[foundIndex].participantCount += count;
+      return acc;
+    }
+
+    updatedAcc.push({ start: value.start, end: value.end, participantCount: value.hubParticipants.length + value.participants.length });
+    return updatedAcc;
+  }, []);
+
+  return timeBlocks;
+}; 

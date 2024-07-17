@@ -7,10 +7,6 @@
     "name": "bookedResources",
     "type": "index",
     "bypassInitialQuery": true
-  }, {
-    "name": "report",
-    "type": "index",
-    "bypassInitialQuery": true
   }],
   "crudOptions": {
     "all": {
