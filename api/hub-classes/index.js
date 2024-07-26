@@ -2,6 +2,8 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
   const moment = require('moment');
   const { recur } = require('moment-recur');
   const winston = require('winston');
+  const HubRegistration = require('../../lib/models/hub-registration');
+  const { bookedResources } = require('../hub-registrations');
 
   const {
     query,
@@ -38,7 +40,7 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
     });
   }
 
-  const hubClass = await HubClass.aggregate([{
+  let hubClasses = await HubClass.aggregate([{
     $match: {
       ...query || {'times.0.start': { $gte: new Date() } }
     }
@@ -77,14 +79,11 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
   }, {
     $project
   }]);
+  const hubClassIds = hubClasses.map(({ _id }) => _id );  
+  const registrations = await bookedResources(undefined, HubRegistration, { query: { hubClass: { $in: hubClassIds } } });
 
   function getGeneratedTimes (cl) {
     const REPEATER = 8;
-
-    if (!((cl || {}).generateTimeRef || {}).dayRef) {
-      winston.debug('generateTimes and generateTimeRef must be set before calling generatedTimes');
-      return [];
-    }
 
     let nextDates = [];
     let { dayRef, timeBlock } = cl.generateTimeRef;
@@ -92,11 +91,28 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
       let today = moment().startOf('day');
       let ref = recur(today).every(dayRef).daysOfWeek();
 
-      // Front-End Registrations Code Example
-      // Do not create a timeblock if there hub-class is full
       nextDates = ref.next(REPEATER).reduce((acc, cur, index) => {
         let startString = `${moment(cur).format('MM DD YYYY')} ${timeBlock.start.hour}:${timeBlock.start.min}`;
         let endString = `${moment(cur).format('MM DD YYYY')} ${timeBlock.end.hour}:${timeBlock.end.min}`;
+
+        let conflictTimes = (registrations || []).filter(registration => {
+          const classname = ((registration.hubClassInfo || [])[0] || {}).name || ((registration.classes || [])[0] || {}).name;
+          const isEssential = (!!classname.match(/safety essentials/ig) || {}).length;
+          const conflictTimeStart = moment(moment(cur).format('MM DD YYYY'), 'MM DD YYYY').hour(timeBlock.start.hour).minute(timeBlock.start.min);
+          
+          return conflictTimeStart.isSame(moment(registration.start)) && !isEssential;
+        });
+
+        const participantCountForTimeblock = conflictTimes.reduce((acc, { participants, trainee }) => {
+          let calc = trainee ? trainee.length : (participants || {}).length || 0;
+          let updatedCount = calc + acc;
+          return updatedCount;
+        }, 0);
+
+        if (participantCountForTimeblock >= cl.seats) {
+          acc.push({});
+          return acc;
+        }
 
         acc.push({
           start: new Date(startString).toLocaleString('en', { timeZone: 'America/Denver' }),
@@ -109,7 +125,12 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
     return nextDates;
   }
 
-  const hubClasses = hubClass.map(hbClass => {
+  hubClasses = hubClasses.map(hbClass => {
+    if (!((hbClass || {}).generateTimeRef || {}).dayRef) {
+      winston.debug('generateTimes and generateTimeRef must be set before calling generatedTimes');
+      return hbClass;
+    }
+
     hbClass.times.push(...getGeneratedTimes(hbClass));
     return hbClass;
   });
