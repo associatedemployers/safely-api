@@ -110,7 +110,6 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
         }, 0);
 
         if (participantCountForTimeblock >= cl.seats) {
-          acc.push({});
           return acc;
         }
 
@@ -131,7 +130,8 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
       return hbClass;
     }
 
-    hbClass.times.push(...getGeneratedTimes(hbClass));
+    const generatedTimes = getGeneratedTimes(hbClass);
+    hbClass.times = generatedTimes;
     return hbClass;
   });
  
