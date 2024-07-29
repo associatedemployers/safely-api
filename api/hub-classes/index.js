@@ -94,22 +94,23 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
       nextDates = ref.next(REPEATER).reduce((acc, cur, index) => {
         let startString = `${moment(cur).format('MM DD YYYY')} ${timeBlock.start.hour}:${timeBlock.start.min}`;
         let endString = `${moment(cur).format('MM DD YYYY')} ${timeBlock.end.hour}:${timeBlock.end.min}`;
+        let participantsInTimeBlock = [];
 
         let conflictTimes = (registrations || []).filter(registration => {
-          const classname = ((registration.hubClassInfo || [])[0] || {}).name || ((registration.classes || [])[0] || {}).name;
-          const isEssential = (!!classname.match(/safety essentials/ig) || {}).length;
+          const className = ((registration.hubClassInfo || [])[0] || {}).name || ((registration.classes || [])[0] || {}).name;
+          const isEssential = (!!className.match(/safety essentials/ig) || {}).length;
           const conflictTimeStart = moment(moment(cur).format('MM DD YYYY'), 'MM DD YYYY').hour(timeBlock.start.hour).minute(timeBlock.start.min);
           
           return conflictTimeStart.isSame(moment(registration.start)) && !isEssential;
         });
 
-        const participantCountForTimeblock = conflictTimes.reduce((acc, { participants, trainee }) => {
-          let calc = trainee ? trainee.length : (participants || {}).length || 0;
-          let updatedCount = calc + acc;
-          return updatedCount;
-        }, 0);
+        conflictTimes.forEach(conflictTime => {
+          let conflictParticipants = conflictTime.trainee ? [ conflictTime.trainee ] : (conflictTime || {}).participants || [];
 
-        if (participantCountForTimeblock >= cl.seats) {
+          participantsInTimeBlock.push(...conflictParticipants);
+        });
+
+        if (participantsInTimeBlock.length >= cl.seats) {
           return acc;
         }
 
@@ -125,7 +126,7 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
   }
 
   hubClasses = hubClasses.map(hbClass => {
-    if (!((hbClass || {}).generateTimeRef || {}).dayRef) {
+    if (!hbClass.generateTimeRef || !hbClass.generateTimeRef.dayRef) {
       winston.debug('generateTimes and generateTimeRef must be set before calling generatedTimes');
       return hbClass;
     }
