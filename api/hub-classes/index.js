@@ -115,6 +115,7 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
         }
 
         acc.push({
+          seatsRemaining: cl.seats - participantsInTimeBlock.length || 0,
           start: new Date(startString).toLocaleString('en', { timeZone: 'America/Denver' }),
           end:   new Date(endString).toLocaleString('en', { timeZone: 'America/Denver' }),
           _id:   index
