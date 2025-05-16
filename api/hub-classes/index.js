@@ -92,8 +92,8 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
       let ref = recur(today).every(dayRef).daysOfWeek();
 
       nextDates = ref.next(REPEATER).reduce((acc, cur, index) => {
-        let startString = `${moment(cur).format('MM DD YYYY')} ${timeBlock.start.hour}:${timeBlock.start.min}`;
-        let endString = `${moment(cur).format('MM DD YYYY')} ${timeBlock.end.hour}:${timeBlock.end.min}`;
+        let startString = `${moment(cur).set('hour', timeBlock.start.hour).set('minute', timeBlock.start.min).format('MM DD YYYY HH:m')}`;
+        let endString = `${moment(cur).set('hour', timeBlock.end.hour).set('minute', timeBlock.end.min).format('MM DD YYYY HH:m')}`;
         let participantsInTimeBlock = [];
 
         let conflictTimes = (registrations || []).filter(registration => {
@@ -116,8 +116,8 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
 
         acc.push({
           seatsRemaining: cl.seats - participantsInTimeBlock.length || 0,
-          start: new Date(startString).toLocaleString('en', { timeZone: 'America/Denver' }),
-          end:   new Date(endString).toLocaleString('en', { timeZone: 'America/Denver' }),
+          start: moment.utc(startString).format('MM/DD/YYYY, HH:mm A'),
+          end:   moment.utc(endString).format('MM/DD/YYYY, HH:mm A'),
           _id:   index
         });
         return acc;
