@@ -61,17 +61,19 @@ exports.getAvailability = function*() {
         lookbackStart = moment(startFrom).startOf('week').toDate(),
         lookbackEnd   = moment(startFrom).endOf('month').endOf('week').toDate();
 
-    let totalBlackouts = yield BlackoutDate.find({
+    let totalClassBlackouts = yield BlackoutDate.find({
       $or: [{
         start: { $gte: lookbackStart, $lte: lookbackEnd }
       }, {
         end: { $gte: lookbackStart, $lte: lookbackEnd }
       }],
       'classExceptions.0': { $exists: false },
-      'classExplicit.0': { $exists: false },
-      'hubClassExceptions.0': { $exists: false },
-      'hubClassExplicit.0': { $exists: false }
+      'classExplicit.0': { $exists: false }
     }).lean().exec();
+
+    if (totalClassBlackouts.filter(blk => blk.hubClassExplicit).length){
+      totalClassBlackouts = totalClassBlackouts.filter(blk => blk.hubClassExplicit.length === 0);
+    }
 
     const findClassBlackout = (blockDate, block) => {
       return BlackoutDate.find({
@@ -97,7 +99,7 @@ exports.getAvailability = function*() {
           return null;
         }
 
-        if (find(totalBlackouts, blackout => day.hour(block[0]).isBetween(blackout.start, blackout.end, null, '[]'))) {
+        if (find(totalClassBlackouts, blackout => day.hour(block[0]).isBetween(blackout.start, blackout.end, null, '[]'))) {
           return null;
         }
 
