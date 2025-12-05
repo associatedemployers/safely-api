@@ -81,12 +81,12 @@ exports.getAvailability = function*() {
         end: { $gte: blockDate },
         blocks: { $in: [ block ] }
       })
-        .populate('classExceptions hubClassExceptions classExplicit hubClassExplicit' )
+        .populate('classExceptions' )
         .then(classBlackouts => {
           return {
             classBlackouts,
             exceptions: concat.apply(this, map(classBlackouts, blk => blk.toObject().classExceptions)),
-            explicit: concat.apply(this, map(classBlackouts, blk => blk.toObject().classExplicit ) )
+            explicit: concat.apply(this, map(classBlackouts, blk => blk.toObject().classExplicit))
           };
         });
     };
