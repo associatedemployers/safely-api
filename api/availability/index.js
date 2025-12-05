@@ -68,7 +68,9 @@ exports.getAvailability = function*() {
         end: { $gte: lookbackStart, $lte: lookbackEnd }
       }],
       'classExceptions.0': { $exists: false },
-      'classExplicit.0': { $exists: false }
+      'classExplicit.0': { $exists: false },
+      'hubClassExceptions.0': { $exists: false },
+      'hubClassExplicit.0': { $exists: false }
     }).lean().exec();
 
     const findClassBlackout = (blockDate, block) => {
@@ -77,12 +79,12 @@ exports.getAvailability = function*() {
         end: { $gte: blockDate },
         blocks: { $in: [ block ] }
       })
-        .populate('classExceptions')
+        .populate('classExceptions hubClassExceptions classExplicit hubClassExplicit' )
         .then(classBlackouts => {
           return {
             classBlackouts,
             exceptions: concat.apply(this, map(classBlackouts, blk => blk.toObject().classExceptions)),
-            explicit: concat.apply(this, map(classBlackouts, blk => blk.toObject().classExplicit))
+            explicit: concat.apply(this, map(classBlackouts, blk => blk.toObject().classExplicit ) )
           };
         });
     };
