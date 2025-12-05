@@ -8,7 +8,7 @@
   "ops": "crud",
   "crudOptions": {
     "update": {
-      "explicitKeys": [ "blocks", "classExceptions", "hubClassExceptions" ]
+      "explicitKeys": [ "blocks", "classExceptions", "hubClassExceptions", "classExplicit", "hubClassExplicit" ]
     }
   }
 }
