@@ -68,7 +68,9 @@ exports.getAvailability = function*() {
         end: { $gte: lookbackStart, $lte: lookbackEnd }
       }],
       'classExceptions.0': { $exists: false },
-      'classExplicit.0': { $exists: false }
+      'classExplicit.0': { $exists: false },
+      'hubClassExceptions.0': { $exists: false },
+      'hubClassExplicit.0': { $exists: false }
     }).lean().exec();
 
     if (totalClassBlackouts.filter(blk => blk.hubClassExplicit).length){
@@ -81,12 +83,12 @@ exports.getAvailability = function*() {
         end: { $gte: blockDate },
         blocks: { $in: [ block ] }
       })
-        .populate('classExceptions' )
+        .populate('classExceptions')
         .then(classBlackouts => {
           return {
             classBlackouts,
-            exceptions: concat.apply(this, map(classBlackouts, blk => blk.toObject().classExceptions)),
-            explicit: concat.apply(this, map(classBlackouts, blk => blk.toObject().classExplicit))
+            exceptions: concat.apply(this, [...map(classBlackouts, blk => blk.toObject().classExceptions), ...map(classBlackouts, blk => blk.toObject().hubClassExceptions)]),
+            explicit: concat.apply(this, [...map(classBlackouts, blk => blk.toObject().classExplicit), ...map(classBlackouts, blk => blk.toObject().hubClassExplicit)])
           };
         });
     };
