@@ -14,8 +14,8 @@ const chai          = require('chai'),
 
 chai.request.addPromises(Promise);
 
-describe.only('Acceptance :: Routes :: availability', () => {
-  let testKey, regularClass1, hubClass1;
+describe('Acceptance :: Routes :: availability', () => {
+  let testKey, regularClass1, regularClass2, hubClass1, hubClass2;
 
   before(function*() {
     api();
@@ -117,6 +117,7 @@ describe.only('Acceptance :: Routes :: availability', () => {
         });
       });
     });
+
     describe('with blackout dates and class exceptions/explicit', () => {
       it('should handle blackouts with class exceptions for one time block', function*() {
         let dec = moment().year(2018).month(11);
@@ -163,6 +164,7 @@ describe.only('Acceptance :: Routes :: availability', () => {
         let tenToTwelve = wednesday.find(block => block[0] === 10 && block[1] === 12);
         expect(tenToTwelve).to.exist;
         expect(tenToTwelve[2]).to.have.property('onlyClasses');
+        expect(tenToTwelve[2].onlyClasses[0]._id).to.equal(regularClass1._id.toString());
         expect(tenToTwelve[2].onlyClasses).to.be.an('array');
 
         let eightToTen = wednesday.find(block => block[0] === 8 && block[1] === 10);
@@ -171,6 +173,7 @@ describe.only('Acceptance :: Routes :: availability', () => {
         expect(eightToTen[2]).not.to.have.property('onlyClasses');
         expect(eightToTen[2].seats).to.equal(1);
       });
+
       it('should handle blackouts with hub class exceptions', function*() {
         let dec = moment().year(2019).month(11);
 
@@ -215,7 +218,9 @@ describe.only('Acceptance :: Routes :: availability', () => {
         let tenToTwelve = thursday.find(block => block[0] === 10 && block[1] === 12);
         expect(tenToTwelve).to.exist;
         expect(tenToTwelve[2]).to.have.property('onlyClasses');
+        expect(tenToTwelve[2].onlyClasses[0]).to.equal(hubClass1._id.toString());
       });
+
       it('should handle blackouts with class explicit', function*() {
         let dec = moment().year(2016).month(11);
 
@@ -259,9 +264,11 @@ describe.only('Acceptance :: Routes :: availability', () => {
         let tenToTwelve = Monday.find(block => block[0] === 10 && block[1] === 12);
         expect(tenToTwelve).to.exist;
         expect(tenToTwelve[2]).to.have.property('blockOutExplicit');
+        expect(tenToTwelve[2].blockOutExplicit[0]).to.equal(regularClass1._id.toString());
         expect(tenToTwelve[2].blockOutExplicit).to.be.an('array');
         expect(tenToTwelve[2].blockOutExplicit.length).to.be.greaterThan(0);
       });
+
       it('should handle blackouts with hub class explicit', function*() {
         let dec = moment().year(2017).month(11); // Use 2017 instead of 2016
 
@@ -310,6 +317,7 @@ describe.only('Acceptance :: Routes :: availability', () => {
 
         // Should NOT have blockOutExplicit or onlyClasses for regular classes
         expect(tenToTwelve[2]).to.have.property('blockOutExplicit');
+        expect(tenToTwelve[2].blockOutExplicit[0]).to.equal(hubClass1._id.toString());
         expect(tenToTwelve[2]).to.not.have.property('onlyClasses');
         expect(tenToTwelve[2].seats).to.equal(1);
 
@@ -320,6 +328,73 @@ describe.only('Acceptance :: Routes :: availability', () => {
         expect(eightToTen[2]).not.to.have.property('onlyClasses');
         expect(eightToTen[2].seats).to.equal(1);
       });
+
+      it('should handle blackouts with multiple classes', function*() {
+        let dec = moment().year(2014).month(11); // Use 2014
+
+        yield (new Seat({
+          number: 1
+        })).save();
+
+        yield (new AvailableTime({
+          blocks: [[8,10],[10,12],[12,14],[14,16]],
+          days: [1, 2, 3, 4, 5],
+          start: moment(dec).date(26).startOf('day').toDate(),
+          end: moment(dec).date(26).endOf('day').toDate()
+        })).save();
+
+        // hubClassExplicit means "blackout ONLY these hub classes"
+        // Regular classes should NOT be affected
+        yield (new BlackoutDate({
+          start: moment(dec).date(26).startOf('day').toDate(),
+          end: moment(dec).date(26).endOf('day').toDate(),
+          hubClassExplicit: [hubClass1._id, hubClass2._id],
+          classExplicit: [regularClass1._id, regularClass2._id],
+          blocks: [[10, 12]]
+        })).save();
+
+        // Add a small delay to ensure cache expires (20 second maxAge)
+        yield new Promise(resolve => setTimeout(resolve, 25));
+
+        let res = yield chai.request(api().listen())
+          .get('/api/v1/availability')
+          .set('X-Test-User', testKey)
+          .query({
+            month:        12,
+            day:          26,
+            year:         2014, // Match the year above
+            showBackdate: true
+          });
+
+        expect(res).to.have.status(200);
+
+        let week = res.body.availability[3];
+        let friday = week[5]; // Friday Dec 15
+
+        // Regular classes should still have full availability
+        expect(friday).to.have.length.greaterThan(0);
+      
+        let tenToTwelve = friday.find(block => block[0] === 10 && block[1] === 12);
+        expect(tenToTwelve).to.exist;
+
+        // Should NOT have blockOutExplicit or onlyClasses for regular classes
+        expect(tenToTwelve[2]).to.have.property('blockOutExplicit');
+        expect(tenToTwelve[2].blockOutExplicit).to.include(hubClass1._id.toString());
+        expect(tenToTwelve[2].blockOutExplicit).to.include(hubClass2._id.toString());
+        expect(tenToTwelve[2].blockOutExplicit).to.include(regularClass1._id.toString());
+        expect(tenToTwelve[2].blockOutExplicit).to.include(regularClass2._id.toString());
+
+        expect(tenToTwelve[2]).to.not.have.property('onlyClasses');
+        expect(tenToTwelve[2].seats).to.equal(1);
+
+        let eightToTen = friday.find(block => block[0] === 8 && block[1] === 10);
+        expect(eightToTen).to.exist;
+        expect(eightToTen[2]).to.have.property('seats');
+        expect(eightToTen[2]).to.not.have.property('blockOutExplicit');
+        expect(eightToTen[2]).not.to.have.property('onlyClasses');
+        expect(eightToTen[2].seats).to.equal(1);
+      });
+
       it('should handle blackouts with NO classes or hub classes (meaning all classes are blackout)', function*() {
         let dec = moment().year(2015).month(11);
 
