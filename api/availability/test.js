@@ -369,7 +369,7 @@ describe('Acceptance :: Routes :: availability', () => {
         expect(res).to.have.status(200);
 
         let week = res.body.availability[3];
-        let friday = week[5]; // Friday Dec 15
+        let friday = week[5]; // Friday Dec 26
 
         // Regular classes should still have full availability
         expect(friday).to.have.length.greaterThan(0);
