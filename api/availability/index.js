@@ -61,14 +61,21 @@ exports.getAvailability = function*() {
         lookbackStart = moment(startFrom).startOf('week').toDate(),
         lookbackEnd   = moment(startFrom).endOf('month').endOf('week').toDate();
 
-    let blackouts = yield BlackoutDate.find({
+    let totalClassBlackouts = yield BlackoutDate.find({
       $or: [{
         start: { $gte: lookbackStart, $lte: lookbackEnd }
       }, {
         end: { $gte: lookbackStart, $lte: lookbackEnd }
       }],
-      'classExceptions.0': { $exists: false }
+      'classExceptions.0': { $exists: false },
+      'classExplicit.0': { $exists: false },
+      'hubClassExceptions.0': { $exists: false },
+      'hubClassExplicit.0': { $exists: false }
     }).lean().exec();
+
+    if (totalClassBlackouts.filter(blk => blk.hubClassExplicit).length){
+      totalClassBlackouts = totalClassBlackouts.filter(blk => blk.hubClassExplicit.length === 0);
+    }
 
     const findClassBlackout = (blockDate, block) => {
       return BlackoutDate.find({
@@ -77,10 +84,13 @@ exports.getAvailability = function*() {
         blocks: { $in: [ block ] }
       })
         .populate('classExceptions')
-        .then(classBlackouts => ({
-          classBlackouts,
-          exceptions: concat.apply(this, map(classBlackouts, blk => blk.toObject().classExceptions))
-        }));
+        .then(classBlackouts => {
+          return {
+            classBlackouts,
+            exceptions: concat.apply(this, [...map(classBlackouts, blk => blk.toObject().classExceptions), ...map(classBlackouts, blk => blk.toObject().hubClassExceptions)]),
+            explicit: concat.apply(this, [...map(classBlackouts, blk => blk.toObject().classExplicit), ...map(classBlackouts, blk => blk.toObject().hubClassExplicit)])
+          };
+        });
     };
 
     let filterBlocks = (day, blocks) => {
@@ -91,7 +101,7 @@ exports.getAvailability = function*() {
           return null;
         }
 
-        if (find(blackouts, blackout => day.hour(block[0]).isBetween(blackout.start, blackout.end, null, '[]'))) {
+        if (find(totalClassBlackouts, blackout => day.hour(block[0]).isBetween(blackout.start, blackout.end, null, '[]'))) {
           return null;
         }
 
@@ -128,6 +138,33 @@ exports.getAvailability = function*() {
                   } else {
                     Object.assign(_block[_block.length - 1], {
                       onlyClasses: result.exceptions
+                    });
+                  }
+                } else if (result.explicit.length > 0) {
+                  const reduction = find(result.classBlackouts, b => !!b.seats);
+
+                  if (reduction) {
+                    return Registration.count({
+                      $or: [{
+                        cancelledOn: null
+                      }, {
+                        cancelledOn: { $exists: false }
+                      }],
+                      'times.start': { $lte: s },
+                      'times.end': { $gte: end },
+                      classes: { $in: map(reduction.classExplicit, '_id') }
+                    }).then(registrations => {
+                      Object.assign(_block[_block.length - 1], {
+                        registrations,
+                        blockOutExplicit: result.explicit,
+                        reduceSeats: reduction.seats - registrations
+                      });
+
+                      return _block;
+                    });
+                  } else {
+                    Object.assign(_block[_block.length - 1], {
+                      blockOutExplicit: result.explicit
                     });
                   }
                 }
