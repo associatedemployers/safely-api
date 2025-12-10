@@ -257,11 +257,11 @@ describe('Acceptance :: Routes :: availability', () => {
         expect(res).to.have.status(200);
       
         let week = res.body.availability[4];
-        let Monday = week[1]; // Monday Dec 26
+        let monday = week[1]; // Monday Dec 26
 
-        expect(Monday).to.have.length.greaterThan(0);
+        expect(monday).to.have.length.greaterThan(0);
       
-        let tenToTwelve = Monday.find(block => block[0] === 10 && block[1] === 12);
+        let tenToTwelve = monday.find(block => block[0] === 10 && block[1] === 12);
         expect(tenToTwelve).to.exist;
         expect(tenToTwelve[2]).to.have.property('blockOutExplicit');
         expect(tenToTwelve[2].blockOutExplicit[0]).to.equal(regularClass1._id.toString());
