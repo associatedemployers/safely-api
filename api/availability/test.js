@@ -154,7 +154,7 @@ describe('Acceptance :: Routes :: availability', () => {
 
         expect(res).to.have.status(200);
       
-        // Find week 2 (contains Dec 15)
+        // Find week containing Dec 26
         let week = res.body.availability[4];
         let wednesday = week[3]; // Wednesday Dec 26
 
