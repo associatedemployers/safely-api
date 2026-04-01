@@ -14,7 +14,7 @@ const chai          = require('chai'),
 
 chai.request.addPromises(Promise);
 
-describe('Acceptance :: Routes :: availability', () => {
+describe.only('Acceptance :: Routes :: availability', () => {
   let testKey, regularClass1, regularClass2, hubClass1, hubClass2;
 
   before(function*() {
@@ -172,6 +172,92 @@ describe('Acceptance :: Routes :: availability', () => {
         expect(eightToTen[2]).to.have.property('seats');
         expect(eightToTen[2]).not.to.have.property('onlyClasses');
         expect(eightToTen[2].seats).to.equal(1);
+      });
+
+      it('should not block out classes outside a blackout class exception', function*() {
+        /**
+         * Asserts that classes outside the range of a blackout configuration for the same day are not blocked. 
+         * Trello Issue QXy0m8BR <-- paste in dashboard search
+         */
+        let year = 2020;
+        let dec = moment().year(year).month(11);
+        let thursday = 24;
+
+        yield (new AvailableTime({
+          blocks: [[8,10],[10,12],[12,14],[14,16]],
+          days: [1, 2, 3, 4, 5],
+          start: moment(dec).date(thursday).startOf('day').toDate(),
+          end: moment(dec).date(thursday).endOf('day').toDate()
+        })).save();
+
+        yield (new Seat({
+          number: 1
+        })).save();
+
+        const blocks = [
+          [ 18, 20 ], 
+          [ 20, 22 ], 
+          [ 22, 0 ], 
+          [ 0, 2 ], 
+          [ 2, 4 ], 
+          [ 4, 6 ], 
+          [ 6, 8 ], 
+          [ 8, 10 ], 
+          [ 10, 12 ], 
+          [ 12, 14 ]
+        ];
+
+        // classExceptions means "blackout everything EXCEPT these classes"
+        // So regularClass1 is allowed, all others are blocked
+        yield (new BlackoutDate({
+          start: moment(dec).date(thursday).startOf('day').toDate(),
+          end: moment(dec).date(thursday).endOf('day').toDate(),
+          classExceptions: [regularClass1._id],
+          blocks
+        })).save();
+
+        let res = yield chai.request(api().listen())
+          .get('/api/v1/availability')
+          .set('X-Test-User', testKey)
+          .query({
+            month: 12,
+            day:  thursday,
+            year,
+            showBackdate: true
+          });
+
+        expect(res).to.have.status(200);
+
+        let week = res.body.availability[3];
+        let th = week[4]; // Thursday Dec 24
+
+        expect(th).to.have.lengthOf(4);
+
+        let eightToTen      = th.find(block => block[0] === 8  && block[1] === 10);
+        let tenToTwelve     = th.find(block => block[0] === 10 && block[1] === 12);
+        let twelveToFourteen = th.find(block => block[0] === 12 && block[1] === 14);
+        let fourteenToSixteen = th.find(block => block[0] === 14 && block[1] === 16);
+
+        // 8-10 and 10-12 are outside the blackout range; should not be restricted
+        expect(eightToTen).to.exist;
+        expect(eightToTen[2]).to.have.property('seats', 1);
+        expect(eightToTen[2]).not.to.have.property('onlyClasses');
+
+        expect(tenToTwelve).to.exist;
+        expect(tenToTwelve[2]).to.have.property('seats', 1);
+        expect(tenToTwelve[2]).not.to.have.property('onlyClasses');
+
+        // 12-14 is within the blackout range with class exception — correct
+        expect(twelveToFourteen).to.exist;
+        expect(twelveToFourteen[2]).to.have.property('onlyClasses');
+        expect(twelveToFourteen[2].onlyClasses).to.be.an('array');
+        expect(twelveToFourteen[2].onlyClasses[0]._id).to.equal(regularClass1._id.toString());
+
+        // 14-16 is within the blackout range; should also have onlyClasses
+        expect(fourteenToSixteen).to.exist;
+        expect(fourteenToSixteen[2]).to.have.property('onlyClasses');
+        expect(fourteenToSixteen[2].onlyClasses).to.be.an('array');
+        expect(fourteenToSixteen[2].onlyClasses[0]._id).to.equal(regularClass1._id.toString());
       });
 
       it('should handle blackouts with hub class exceptions', function*() {
