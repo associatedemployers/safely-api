@@ -269,10 +269,10 @@ describe('Acceptance :: Routes :: availability', () => {
         expect(tenToTwelve[2]).to.have.property('seats', 1);
         expect(tenToTwelve[2]).not.to.have.property('onlyClasses');
 
-        // 12-14 touches the gap boundary at 14:00; should be restricted
+        // 12-14 touches the gap boundary at 14:00; should not be restricted
         expect(twelveToFourteen).to.exist;
-        expect(tenToTwelve[2]).to.have.property('seats', 1);
-        expect(tenToTwelve[2]).not.to.have.property('onlyClasses');
+        expect(twelveToFourteen[2]).to.have.property('seats', 1);
+        expect(twelveToFourteen[2]).not.to.have.property('onlyClasses');
 
         // 14-16 starts at gap boundary (14:00); should be restricted
         expect(fourteenToSixteen).to.exist;
@@ -286,10 +286,10 @@ describe('Acceptance :: Routes :: availability', () => {
         expect(sixteenToEighteen[2].onlyClasses).to.be.an('array');
         expect(sixteenToEighteen[2].onlyClasses[0]._id).to.equal(regularClass1._id.toString());
 
-        // 12-14 touches the gap boundary at 14:00; should be restricted
+        // 18-20 touches the gap boundary at 18:00; should not be restricted
         expect(eighteenToTwenty).to.exist;
-        expect(tenToTwelve[2]).to.have.property('seats', 1);
-        expect(tenToTwelve[2]).not.to.have.property('onlyClasses');
+        expect(eighteenToTwenty[2]).to.have.property('seats', 1);
+        expect(eighteenToTwenty[2]).not.to.have.property('onlyClasses');
       });
 
       it('should handle blackouts with hub class exceptions', function*() {
