@@ -111,13 +111,12 @@ exports.getAvailability = function*() {
               }
             }
             
-            // If there's a gap, only restrict blocks that touch or cross the gap boundary
+            // If there's a gap, restrict blocks that strictly overlap with the gap.
+            // Both boundaries are exclusive: a block ending exactly at gapStart or
+            // starting exactly at gapEnd is considered outside the blackout.
             if (gapStart !== null && gapEnd !== null) {
-              // Restrict if block ends at gap start OR block starts at gap start
               const blockEndAdjusted = blockEnd === 0 ? 24 : blockEnd;
-              const touchesGapStart = blockEndAdjusted === gapStart || blockStart === gapStart;
-              
-              return touchesGapStart;
+              return blockStart < gapEnd && blockEndAdjusted > gapStart;
             }
             
             // No gap found, apply standard overlap check

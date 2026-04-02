@@ -14,7 +14,7 @@ const chai          = require('chai'),
 
 chai.request.addPromises(Promise);
 
-describe.only('Acceptance :: Routes :: availability', () => {
+describe('Acceptance :: Routes :: availability', () => {
   let testKey, regularClass1, regularClass2, hubClass1, hubClass2;
 
   before(function*() {
@@ -184,7 +184,7 @@ describe.only('Acceptance :: Routes :: availability', () => {
         let thursday = 24;
 
         yield (new AvailableTime({
-          blocks: [[0,2],[2,4],[4,6],[6,8],[8,10],[10,12],[12,14],[14,16],[16,18]],
+          blocks: [[0,2],[2,4],[4,6],[6,8],[8,10],[10,12],[12,14],[14,16],[16,18], [18,20]],
           days: [1, 2, 3, 4, 5],
           start: moment(dec).date(thursday).startOf('day').toDate(),
           end: moment(dec).date(thursday).endOf('day').toDate()
@@ -230,9 +230,8 @@ describe.only('Acceptance :: Routes :: availability', () => {
 
         let week = res.body.availability[3];
         let th = week[4]; // Thursday Dec 24
-        console.log('---th', th);
 
-        expect(th).to.have.lengthOf(9);
+        expect(th).to.have.lengthOf(10);
 
         let zeroToTwo        = th.find(block => block[0] === 0  && block[1] === 2);
         let twoToFour        = th.find(block => block[0] === 2  && block[1] === 4);
@@ -243,7 +242,7 @@ describe.only('Acceptance :: Routes :: availability', () => {
         let twelveToFourteen = th.find(block => block[0] === 12 && block[1] === 14);
         let fourteenToSixteen = th.find(block => block[0] === 14 && block[1] === 16);
         let sixteenToEighteen = th.find(block => block[0] === 16 && block[1] === 18);
-        console.log('---sixteen-to-eighteen', sixteenToEighteen);
+        let eighteenToTwenty = th.find(block => block[0] === 18 && block[1] === 20);
 
         // 0-2, 2-4, 4-6, 6-8 are outside the blackout range; should NOT be restricted
         expect(zeroToTwo).to.exist;
@@ -272,9 +271,8 @@ describe.only('Acceptance :: Routes :: availability', () => {
 
         // 12-14 touches the gap boundary at 14:00; should be restricted
         expect(twelveToFourteen).to.exist;
-        expect(twelveToFourteen[2]).to.have.property('onlyClasses');
-        expect(twelveToFourteen[2].onlyClasses).to.be.an('array');
-        expect(twelveToFourteen[2].onlyClasses[0]._id).to.equal(regularClass1._id.toString());
+        expect(tenToTwelve[2]).to.have.property('seats', 1);
+        expect(tenToTwelve[2]).not.to.have.property('onlyClasses');
 
         // 14-16 starts at gap boundary (14:00); should be restricted
         expect(fourteenToSixteen).to.exist;
@@ -287,6 +285,11 @@ describe.only('Acceptance :: Routes :: availability', () => {
         expect(sixteenToEighteen[2]).to.have.property('onlyClasses');
         expect(sixteenToEighteen[2].onlyClasses).to.be.an('array');
         expect(sixteenToEighteen[2].onlyClasses[0]._id).to.equal(regularClass1._id.toString());
+
+        // 12-14 touches the gap boundary at 14:00; should be restricted
+        expect(eighteenToTwenty).to.exist;
+        expect(tenToTwelve[2]).to.have.property('seats', 1);
+        expect(tenToTwelve[2]).not.to.have.property('onlyClasses');
       });
 
       it('should handle blackouts with hub class exceptions', function*() {
