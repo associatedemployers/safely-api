@@ -80,15 +80,59 @@ exports.getAvailability = function*() {
     const findClassBlackout = (blockDate, block) => {
       return BlackoutDate.find({
         start: { $lte: blockDate },
-        end: { $gte: blockDate },
-        blocks: { $in: [ block ] }
+        end: { $gte: blockDate }
       })
         .populate('classExceptions')
         .then(classBlackouts => {
+          // Filter blackouts to only those where the block time falls within the blackout time ranges
+          const relevantBlackouts = classBlackouts.filter(blackout => {
+            if (!blackout.blocks || blackout.blocks.length === 0) {
+              return true; // No blocks specified means entire day is blacked out
+            }
+            
+            const blockStart = block[0];
+            const blockEnd = block[1];
+
+            // Sort blocks to find the gap in overnight sequences
+            const sortedBlocks = [...blackout.blocks].sort((a, b) => a[0] - b[0]);
+            
+            // Find the gap (where the sequence breaks)
+            let gapStart = null;
+            let gapEnd = null;
+            
+            for (let i = 0; i < sortedBlocks.length - 1; i++) {
+              const currentEnd = sortedBlocks[i][1] === 0 ? 24 : sortedBlocks[i][1];
+              const nextStart = sortedBlocks[i + 1][0];
+              
+              if (currentEnd !== nextStart) {
+                gapStart = currentEnd;
+                gapEnd = nextStart;
+                break;
+              }
+            }
+            
+            // If there's a gap, restrict blocks that strictly overlap with the gap.
+            // Both boundaries are exclusive: a block ending exactly at gapStart or
+            // starting exactly at gapEnd is considered outside the blackout.
+            if (gapStart !== null && gapEnd !== null) {
+              const blockEndAdjusted = blockEnd === 0 ? 24 : blockEnd;
+              return blockStart < gapEnd && blockEndAdjusted > gapStart;
+            }
+            
+            // No gap found, apply standard overlap check
+            return blackout.blocks.some(blackoutBlock => {
+              const blackoutStart = blackoutBlock[0];
+              const blackoutEnd = blackoutBlock[1] === 0 ? 24 : blackoutBlock[1];
+              const blkEnd = blockEnd === 0 ? 24 : blockEnd;
+              
+              return blockStart < blackoutEnd && blkEnd > blackoutStart;
+            });
+          });
+          
           return {
-            classBlackouts,
-            exceptions: concat.apply(this, [...map(classBlackouts, blk => blk.toObject().classExceptions), ...map(classBlackouts, blk => blk.toObject().hubClassExceptions)]),
-            explicit: concat.apply(this, [...map(classBlackouts, blk => blk.toObject().classExplicit), ...map(classBlackouts, blk => blk.toObject().hubClassExplicit)])
+            classBlackouts: relevantBlackouts,
+            exceptions: concat.apply(this, [...map(relevantBlackouts, blk => blk.toObject().classExceptions), ...map(relevantBlackouts, blk => blk.toObject().hubClassExceptions)]),
+            explicit: concat.apply(this, [...map(relevantBlackouts, blk => blk.toObject().classExplicit), ...map(relevantBlackouts, blk => blk.toObject().hubClassExplicit)])
           };
         });
     };
