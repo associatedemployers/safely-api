@@ -92,8 +92,8 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
       let ref = recur(today).every(dayRef).daysOfWeek();
 
       nextDates = ref.next(REPEATER).reduce((acc, cur, index) => {
-        let startString = `${moment(cur).set('hour', timeBlock.start.hour).set('minute', timeBlock.start.min).format('MM DD YYYY HH:m')}`;
-        let endString = `${moment(cur).set('hour', timeBlock.end.hour).set('minute', timeBlock.end.min).format('MM DD YYYY HH:m')}`;
+        let startString = `${moment(cur).set('hour', timeBlock.start.hour).set('minute', timeBlock.start.min).format('MM DD YYYY HH:mm')}`;
+        let endString = `${moment(cur).set('hour', timeBlock.end.hour).set('minute', timeBlock.end.min).format('MM DD YYYY HH:mm')}`;
         let participantsInTimeBlock = [];
 
         let conflictTimes = (registrations || []).filter(registration => {
@@ -141,3 +141,4 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
     hubClass: hubClasses
   };
 };
+ 
