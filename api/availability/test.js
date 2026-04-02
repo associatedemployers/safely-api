@@ -247,19 +247,19 @@ describe('Acceptance :: Routes :: availability', () => {
         // 0-2, 2-4, 4-6, 6-8 are outside the blackout range; should NOT be restricted
         expect(zeroToTwo).to.exist;
         expect(zeroToTwo[2]).to.not.have.property('onlyClasses');
-        expect(tenToTwelve[2]).to.have.property('seats', 1);
+        expect(zeroToTwo[2]).to.have.property('seats', 1);
 
         expect(twoToFour).to.exist;
         expect(twoToFour[2]).to.not.have.property('onlyClasses');
-        expect(tenToTwelve[2]).to.have.property('seats', 1);
+        expect(twoToFour[2]).to.have.property('seats', 1);
 
         expect(fourToSix).to.exist;
         expect(fourToSix[2]).to.not.have.property('onlyClasses');
-        expect(tenToTwelve[2]).to.have.property('seats', 1);
+        expect(fourToSix[2]).to.have.property('seats', 1);
 
         expect(sixToEight).to.exist;
         expect(sixToEight[2]).to.not.have.property('onlyClasses');
-        expect(tenToTwelve[2]).to.have.property('seats', 1);
+        expect(sixToEight[2]).to.have.property('seats', 1);
 
         expect(eightToTen).to.exist;
         expect(eightToTen[2]).to.have.property('seats', 1);
