@@ -141,5 +141,3 @@ exports.withAvailability = async function (n, HubClass, compiledQuery) {
     hubClass: hubClasses
   };
 };
- 
- 
