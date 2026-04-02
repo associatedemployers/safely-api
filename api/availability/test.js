@@ -513,6 +513,54 @@ describe('Acceptance :: Routes :: availability', () => {
         expect(eightToTen[2].seats).to.equal(1);
       });
 
+      it('should not block time slots outside the blackout hour blocks (issue #168)', function*() {
+        // Reproduce: blackout covers 4am-6am; F2F at 8am should remain visible
+        let dec = moment().year(2021).month(11); // December 2021
+
+        yield (new AvailableTime({
+          blocks: [[4,6],[8,10],[10,12]],
+          days: [1, 2, 3, 4, 5],
+          start: moment(dec).date(7).startOf('day').toDate(),
+          end:   moment(dec).date(7).endOf('day').toDate()
+        })).save();
+
+        yield (new Seat({ number: 1 })).save();
+
+        // Total blackout (no class filters) but only for 4am-6am
+        yield (new BlackoutDate({
+          start:  moment(dec).date(7).startOf('day').toDate(),
+          end:    moment(dec).date(7).endOf('day').toDate(),
+          blocks: [[4, 6]]
+        })).save();
+
+        yield new Promise(resolve => setTimeout(resolve, 25));
+
+        let res = yield chai.request(api().listen())
+          .get('/api/v1/availability')
+          .set('X-Test-User', testKey)
+          .query({ month: 12, year: 2021, showBackdate: true });
+
+        expect(res).to.have.status(200);
+
+        // Dec 7 2021 is a Tuesday → week index 1, day index 2
+        let tuesday = res.body.availability[1][2];
+
+        // 4-6 block should be blocked (not present)
+        let fourToSix = tuesday.find(b => b[0] === 4 && b[1] === 6);
+        expect(fourToSix, '4-6 block should be blacked out').to.not.exist;
+
+        // 8-10 block must still be available — this is the bug
+        let eightToTen = tuesday.find(b => b[0] === 8 && b[1] === 10);
+        expect(eightToTen, '8-10 block should not be blacked out').to.exist;
+        expect(eightToTen[2]).to.have.property('seats', 1);
+        expect(eightToTen[2]).to.not.have.property('onlyClasses');
+
+        // 10-12 block must also still be available
+        let tenToTwelve = tuesday.find(b => b[0] === 10 && b[1] === 12);
+        expect(tenToTwelve, '10-12 block should not be blacked out').to.exist;
+        expect(tenToTwelve[2]).to.have.property('seats', 1);
+      });
+
       it('should handle blackouts with NO classes or hub classes (meaning all classes are blackout)', function*() {
         let dec = moment().year(2015).month(11);
 
