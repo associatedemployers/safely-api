@@ -145,7 +145,17 @@ exports.getAvailability = function*() {
           return null;
         }
 
-        if (find(totalClassBlackouts, blackout => day.hour(block[0]).isBetween(blackout.start, blackout.end, null, '[]'))) {
+        if (find(totalClassBlackouts, blackout => {
+          if (!day.hour(block[0]).isBetween(blackout.start, blackout.end, null, '[]')) {
+            return false;
+          }
+          // If the blackout has no hour blocks, it blocks the entire day
+          if (!blackout.blocks || blackout.blocks.length === 0) {
+            return true;
+          }
+          // Only block this availability slot if it overlaps with a blackout hour block
+          return blackout.blocks.some(bBlock => block[0] < bBlock[1] && block[1] > bBlock[0]);
+        })) {
           return null;
         }
 
