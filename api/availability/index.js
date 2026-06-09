@@ -166,7 +166,6 @@ exports.getAvailability = function*() {
             return findClassBlackout(s, block)
               .then(result => {
                 let _block = block.concat([{ seats }]);
-                console.log('block', block, result);
 
                 if (result.exceptions.length > 0) {
                   const reduction = find(result.classBlackouts, b => !!b.seats);
