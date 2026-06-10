@@ -25,7 +25,7 @@
     "concat-stream-promise": "^0.1.1",
     "cron": "^1.1.0",
     "csv-array": "0.0.22",
-    "debug": "*",
+    "debug": "4.3.1",
     "deep-diff": "^0.3.4",
     "dotenv": "^8.2.0",
     "email-templates": "^2.5.4",
