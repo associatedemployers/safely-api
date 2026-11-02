@@ -47,7 +47,7 @@
     "koa-ratelimit": "~1.0.3",
     "koa-resource-router": "^0.3.3",
     "koa-response-time": "^1.0.2",
-    "koa-router": "~3.1.4",
+    "koa-router": "~13.0.1",
     "koa-simple-qs": "0.0.3",
     "less": "^2.7.1",
     "lodash": "^4.17.21",
