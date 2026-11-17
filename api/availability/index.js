@@ -30,9 +30,6 @@ function getWeekNums (momentObj) {
   return moment.duration(end - start).weeks();
 }
 
-// The lab blocks for one day, in time order (see AvailableTime.findBlocksOn).
-let findBlocks = day => AvailableTime.findBlocksOn(day);
-
 exports.getAvailability = function*() {
   try {
     // Check the cache...
@@ -227,7 +224,7 @@ exports.getAvailability = function*() {
         return Promise.reduce(range(7), (week, di) => {
           let day = moment(startFrom).add(w, 'week').day(di);
 
-          return findBlocks(day)
+          return AvailableTime.findBlocksOn(day)
             .then(blocks => filterBlocks(day, blocks))
             .then(fb => [ ...week, fb ]);
         }, []);
