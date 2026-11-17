@@ -14,7 +14,8 @@ const moment        = require('moment'),
       { error }     = require('winston'),
       concat        = require('lodash/concat'),
       range         = require('lodash/range'),
-      { blockStart, blockEnd } = require('../../lib/util/time-blocks');
+      { blockStart, blockEnd } = require('../../lib/util/time-blocks'),
+      { timesOverlapping } = require('../../lib/models/seat/seats-in-use');
 
 const cache = lruCache({
   max: 10,
@@ -170,8 +171,7 @@ exports.getAvailability = function*() {
                       }, {
                         cancelledOn: { $exists: false }
                       }],
-                      'times.start': { $lte: s },
-                      'times.end': { $gte: end },
+                      times: timesOverlapping(s, end),
                       classes: { $in: map(reduction.classExceptions, '_id') }
                     }).then(registrations => {
                       Object.assign(_block[_block.length - 1], {
@@ -197,8 +197,7 @@ exports.getAvailability = function*() {
                       }, {
                         cancelledOn: { $exists: false }
                       }],
-                      'times.start': { $lte: s },
-                      'times.end': { $gte: end },
+                      times: timesOverlapping(s, end),
                       classes: { $in: map(reduction.classExplicit, '_id') }
                     }).then(registrations => {
                       Object.assign(_block[_block.length - 1], {
