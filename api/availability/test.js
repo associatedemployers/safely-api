@@ -833,4 +833,100 @@ describe('Acceptance :: Routes :: availability', () => {
       availability.forEach(week => week.forEach(blocks => expect(blocks).to.have.lengthOf(0)));
     });
   });
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // The switch: a booking made on the old times (8-10) is still on the calendar
+  // when the lab moves to the half-hour blocks.
+  // ───────────────────────────────────────────────────────────────────────────
+  describe('GET /api/v1/availability with an old-time booking on a half-hour day', () => {
+    const Registration = require('../../lib/models/registration');
+
+    function* getDay (month, year, date) {
+      const res = yield chai.request(api().listen())
+        .get('/api/v1/availability')
+        .set('X-Test-User', testKey)
+        .query({ month, year, showBackdate: true });
+
+      expect(res).to.have.status(200);
+
+      const firstWeekStart = moment(date).startOf('month').startOf('week'),
+            weekIndex = moment(date).startOf('week').diff(firstWeekStart, 'weeks');
+
+      return res.body.availability[weekIndex][moment(date).day()];
+    }
+
+    const seatsAt = (blocks, startHour) => blocks.find(block => block[0] === startHour)[2].seats;
+
+    // Makes an 8:00-10:00 booking on the old day, then switches to the new day.
+    function* bookOldTimeThenSwitch (tuesday, seatCount) {
+      for (let number = 1; number <= seatCount; number++) {
+        yield (new Seat({ number })).save();
+      }
+
+      yield (new AvailableTime({ blocks: [[8, 10], [10, 12], [12, 14], [14, 16]], days: [1, 2, 3, 4, 5] })).save();
+
+      const oldBooking = new Registration({
+        start: moment(tuesday).hour(8).toDate(),
+        classes: [regularClass1._id]
+      });
+
+      yield oldBooking.save();
+
+      yield AvailableTime.remove({});
+      yield AvailableTime.collection.insertOne({
+        blocks: [[7.5, 9.5], [9.5, 11.5], [11.5, 13.5]],
+        days: [1, 2, 3, 4],
+        end: null
+      });
+
+      return oldBooking;
+    }
+
+    it('shows 6, 6 and 7 seats in a 7 seat lab', function*() {
+      const tuesday = moment('2028-03-07', 'YYYY-MM-DD');
+
+      yield bookOldTimeThenSwitch(tuesday, 7);
+
+      const blocks = yield getDay(3, 2028, tuesday);
+
+      expect(seatsAt(blocks, 7.5)).to.equal(6, '7:30-9:30 overlaps the 8-10 booking');
+      expect(seatsAt(blocks, 9.5)).to.equal(6, '9:30-11:30 overlaps the 8-10 booking');
+      expect(seatsAt(blocks, 11.5)).to.equal(7, '11:30-1:30 is after it');
+    });
+
+    it('shows a one seat lab as full in both blocks the old booking overlaps', function*() {
+      const tuesday = moment('2028-04-04', 'YYYY-MM-DD');
+
+      yield bookOldTimeThenSwitch(tuesday, 1);
+
+      const blocks = yield getDay(4, 2028, tuesday);
+
+      expect(seatsAt(blocks, 7.5)).to.equal(0);
+      expect(seatsAt(blocks, 9.5)).to.equal(0);
+      expect(seatsAt(blocks, 11.5)).to.equal(1);
+    });
+
+    it('shows every seat again once the old booking is cancelled', function*() {
+      const tuesday = moment('2028-05-02', 'YYYY-MM-DD');
+      const oldBooking = yield bookOldTimeThenSwitch(tuesday, 7);
+
+      yield Registration.update({ _id: oldBooking._id }, { $set: { cancelledOn: new Date() } });
+
+      const blocks = yield getDay(5, 2028, tuesday);
+
+      expect(seatsAt(blocks, 7.5)).to.equal(7);
+      expect(seatsAt(blocks, 9.5)).to.equal(7);
+    });
+
+    it('does not touch the days around the old booking', function*() {
+      const tuesday = moment('2028-06-06', 'YYYY-MM-DD');
+
+      yield bookOldTimeThenSwitch(tuesday, 7);
+
+      const wednesday = yield getDay(6, 2028, moment(tuesday).add(1, 'day'));
+
+      expect(seatsAt(wednesday, 7.5)).to.equal(7);
+      expect(seatsAt(wednesday, 9.5)).to.equal(7);
+    });
+  });
 });
