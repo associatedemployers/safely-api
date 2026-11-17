@@ -603,4 +603,234 @@ describe('Acceptance :: Routes :: availability', () => {
       });
     });
   });
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // The new lab day: two-hour blocks that start on the half hour.
+  //   7:30-9:30, 9:30-11:30, 11:30-1:30, Monday to Thursday.
+  //
+  // The endpoint caches a month for 20 seconds, so every test asks for a
+  // different month.
+  // ───────────────────────────────────────────────────────────────────────────
+  describe('GET /api/v1/availability on the half-hour lab day', () => {
+    const Registration = require('../../lib/models/registration');
+
+    const NEW_LAB_DAY = [[7.5, 9.5], [9.5, 11.5], [11.5, 13.5]];
+    const MONDAY_TO_THURSDAY = [1, 2, 3, 4];
+
+    const day = text => moment(text, 'YYYY-MM-DD');
+
+    // Saves an Available Time record straight into the collection, so that
+    // `end: null` is stored the way the site saves an empty end date.
+    function* openTheLab (fields) {
+      yield AvailableTime.collection.insertOne(Object.assign({
+        blocks: NEW_LAB_DAY,
+        days: MONDAY_TO_THURSDAY
+      }, fields));
+    }
+
+    function* getMonth (month, year) {
+      const res = yield chai.request(api().listen())
+        .get('/api/v1/availability')
+        .set('X-Test-User', testKey)
+        .query({ month, year, showBackdate: true });
+
+      expect(res).to.have.status(200);
+
+      return res.body.availability;
+    }
+
+    // Picks one day's blocks out of the month the endpoint returned.
+    // The month is a list of weeks, and each week is a list of seven days.
+    function blocksOn (availability, date) {
+      const firstWeekStart = moment(date).startOf('month').startOf('week'),
+            weekIndex = moment(date).startOf('week').diff(firstWeekStart, 'weeks');
+
+      return availability[weekIndex][moment(date).day()];
+    }
+
+    const startsOf = blocks => blocks.map(block => block[0]);
+    const seatsAt = (blocks, startHour) => blocks.find(block => block[0] === startHour)[2].seats;
+
+    beforeEach(function*() {
+      yield (new Seat({ number: 1 })).save();
+      yield (new Seat({ number: 2 })).save();
+    });
+
+    it('shows the three blocks for a record with a start date and no end date', function*() {
+      yield openTheLab({ start: day('2027-02-01').startOf('day').toDate(), end: null });
+
+      const availability = yield getMonth(2, 2027);
+      const tuesday = blocksOn(availability, day('2027-02-02'));
+
+      expect(tuesday).to.deep.equal([
+        [7.5, 9.5, { seats: 2 }],
+        [9.5, 11.5, { seats: 2 }],
+        [11.5, 13.5, { seats: 2 }]
+      ]);
+    });
+
+    it('shows the blocks Monday to Thursday and nothing Friday to Sunday', function*() {
+      yield openTheLab({ start: day('2027-03-01').startOf('day').toDate(), end: null });
+
+      const availability = yield getMonth(3, 2027);
+
+      // The week of Sunday 7 March 2027.
+      expect(blocksOn(availability, day('2027-03-07'))).to.have.lengthOf(0, 'Sunday');
+      expect(startsOf(blocksOn(availability, day('2027-03-08')))).to.deep.equal([7.5, 9.5, 11.5], 'Monday');
+      expect(startsOf(blocksOn(availability, day('2027-03-09')))).to.deep.equal([7.5, 9.5, 11.5], 'Tuesday');
+      expect(startsOf(blocksOn(availability, day('2027-03-10')))).to.deep.equal([7.5, 9.5, 11.5], 'Wednesday');
+      expect(startsOf(blocksOn(availability, day('2027-03-11')))).to.deep.equal([7.5, 9.5, 11.5], 'Thursday');
+      expect(blocksOn(availability, day('2027-03-12'))).to.have.lengthOf(0, 'Friday');
+      expect(blocksOn(availability, day('2027-03-13'))).to.have.lengthOf(0, 'Saturday');
+    });
+
+    it('shows nothing before the record starts and blocks from its first day', function*() {
+      yield openTheLab({ start: day('2027-04-14').startOf('day').toDate(), end: null });
+
+      const availability = yield getMonth(4, 2027);
+
+      expect(blocksOn(availability, day('2027-04-13'))).to.have.lengthOf(0, 'the Tuesday before');
+      expect(startsOf(blocksOn(availability, day('2027-04-14')))).to.deep.equal([7.5, 9.5, 11.5], 'the first day');
+    });
+
+    it('shows blocks up to the record\'s last day and nothing after', function*() {
+      yield openTheLab({ end: day('2027-05-12').endOf('day').toDate() });
+
+      const availability = yield getMonth(5, 2027);
+
+      expect(startsOf(blocksOn(availability, day('2027-05-12')))).to.deep.equal([7.5, 9.5, 11.5], 'the last day');
+      expect(blocksOn(availability, day('2027-05-13'))).to.have.lengthOf(0, 'the Thursday after');
+    });
+
+    it('switches from the old day to the new day on the start date', function*() {
+      yield (new AvailableTime({
+        blocks: [[8, 10], [10, 12], [12, 14], [14, 16]],
+        days: [1, 2, 3, 4, 5],
+        end: day('2027-06-15').endOf('day').toDate()
+      })).save();
+      yield openTheLab({ start: day('2027-06-16').startOf('day').toDate(), end: null });
+
+      const availability = yield getMonth(6, 2027);
+
+      expect(startsOf(blocksOn(availability, day('2027-06-15')))).to.deep.equal([8, 10, 12, 14], 'last old day');
+      expect(startsOf(blocksOn(availability, day('2027-06-16')))).to.deep.equal([7.5, 9.5, 11.5], 'first new day');
+      expect(blocksOn(availability, day('2027-06-18'))).to.have.lengthOf(0, 'the Friday after is closed');
+    });
+
+    it('lists a block once and in time order when two records overlap', function*() {
+      yield openTheLab({ blocks: [[11.5, 13.5], [7.5, 9.5]] });
+      yield openTheLab({ blocks: [[9.5, 11.5], [7.5, 9.5]] });
+
+      const availability = yield getMonth(7, 2027);
+
+      expect(startsOf(blocksOn(availability, day('2027-07-06')))).to.deep.equal([7.5, 9.5, 11.5]);
+    });
+
+    it('takes a seat away only from the block that was booked', function*() {
+      yield openTheLab({ end: null });
+
+      const tuesday = day('2027-08-03');
+
+      yield (new Registration({
+        start: moment(tuesday).hour(9).minute(30).toDate(),
+        classes: [regularClass1._id]
+      })).save();
+
+      const blocks = blocksOn(yield getMonth(8, 2027), tuesday);
+
+      expect(seatsAt(blocks, 7.5)).to.equal(2, '7:30 is untouched');
+      expect(seatsAt(blocks, 9.5)).to.equal(1, '9:30 lost one seat');
+      expect(seatsAt(blocks, 11.5)).to.equal(2, '11:30 is untouched');
+    });
+
+    it('takes a seat from both blocks of a three hour class', function*() {
+      yield openTheLab({ end: null });
+
+      const threeHourClass = yield (new Class({ name: 'Three Hour Class', hours: 3 })).save();
+      const tuesday = day('2027-09-07');
+
+      yield (new Registration({
+        start: moment(tuesday).hour(7).minute(30).toDate(),
+        classes: [threeHourClass._id]
+      })).save();
+
+      const blocks = blocksOn(yield getMonth(9, 2027), tuesday);
+
+      expect(seatsAt(blocks, 7.5)).to.equal(1);
+      expect(seatsAt(blocks, 9.5)).to.equal(1);
+      expect(seatsAt(blocks, 11.5)).to.equal(2);
+    });
+
+    it('shows a full block with no seats and leaves the others open', function*() {
+      yield openTheLab({ end: null });
+
+      const tuesday = day('2027-10-05');
+      const at930 = moment(tuesday).hour(9).minute(30).toDate();
+
+      yield (new Registration({ start: at930, classes: [regularClass1._id] })).save();
+      yield (new Registration({ start: at930, classes: [regularClass1._id] })).save();
+
+      const blocks = blocksOn(yield getMonth(10, 2027), tuesday);
+
+      expect(seatsAt(blocks, 9.5)).to.equal(0);
+      expect(seatsAt(blocks, 7.5)).to.equal(2);
+    });
+
+    it('hides only the blacked-out block when a blackout for everyone lists 9:30-11:30', function*() {
+      yield openTheLab({ end: null });
+
+      const tuesday = day('2027-11-02');
+
+      yield (new BlackoutDate({
+        start: moment(tuesday).startOf('day').toDate(),
+        end: moment(tuesday).endOf('day').toDate(),
+        blocks: [[9.5, 11.5]]
+      })).save();
+
+      const availability = yield getMonth(11, 2027);
+
+      expect(startsOf(blocksOn(availability, tuesday))).to.deep.equal([7.5, 11.5], 'the blacked-out Tuesday');
+      expect(startsOf(blocksOn(availability, day('2027-11-03')))).to.deep.equal([7.5, 9.5, 11.5], 'the day after');
+    });
+
+    it('hides the whole day when a blackout for everyone lists no blocks', function*() {
+      yield openTheLab({ end: null });
+
+      const tuesday = day('2027-12-07');
+
+      yield (new BlackoutDate({
+        start: moment(tuesday).startOf('day').toDate(),
+        end: moment(tuesday).endOf('day').toDate()
+      })).save();
+
+      expect(blocksOn(yield getMonth(12, 2027), tuesday)).to.have.lengthOf(0);
+    });
+
+    it('marks only the 9:30 block when a blackout names a class for 9:30-11:30', function*() {
+      yield openTheLab({ end: null });
+
+      const tuesday = day('2028-01-04');
+
+      yield (new BlackoutDate({
+        start: moment(tuesday).startOf('day').toDate(),
+        end: moment(tuesday).endOf('day').toDate(),
+        classExplicit: [regularClass1._id],
+        blocks: [[9.5, 11.5]]
+      })).save();
+
+      const blocks = blocksOn(yield getMonth(1, 2028), tuesday);
+      const infoAt = startHour => blocks.find(block => block[0] === startHour)[2];
+
+      expect(startsOf(blocks)).to.deep.equal([7.5, 9.5, 11.5], 'every block is still listed');
+      expect(infoAt(9.5).blockOutExplicit).to.deep.equal([regularClass1._id.toString()]);
+      expect(infoAt(7.5)).to.not.have.property('blockOutExplicit');
+      expect(infoAt(11.5)).to.not.have.property('blockOutExplicit');
+    });
+
+    it('shows every day closed when there are no Available Time records', function*() {
+      const availability = yield getMonth(2, 2028);
+
+      availability.forEach(week => week.forEach(blocks => expect(blocks).to.have.lengthOf(0)));
+    });
+  });
 });
