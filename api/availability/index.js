@@ -13,7 +13,9 @@ const moment        = require('moment'),
       map           = require('lodash/map'),
       { error }     = require('winston'),
       concat        = require('lodash/concat'),
-      range         = require('lodash/range');
+      range         = require('lodash/range'),
+      { blockStart, blockEnd } = require('../../lib/util/time-blocks'),
+      { timesOverlapping } = require('../../lib/models/seat/seats-in-use');
 
 const cache = lruCache({
   max: 10,
@@ -27,21 +29,6 @@ function getWeekNums (momentObj) {
 
   return moment.duration(end - start).weeks();
 }
-
-let findBlocks = time => AvailableTime.find({
-  $or: [{
-    start: { $lte: time },
-    end: { $exists: false }
-  }, {
-    start: { $lte: time },
-    end: { $gte: time }
-  }, {
-    start: { $exists: false },
-    end: { $exists: false }
-  }],
-  days: { $in: [ moment(time).day() ] }
-}).lean().exec()
-  .reduce((b, t) => b.concat(t.blocks), []);
 
 exports.getAvailability = function*() {
   try {
@@ -139,14 +126,16 @@ exports.getAvailability = function*() {
 
     let filterBlocks = (day, blocks) => {
       return Promise.map(blocks, (block) => {
-        let s = moment(day).hour(block[0]).startOf('hour').toDate();
+        // The real start of the block. A block such as [ 7.5, 9.5 ] starts at 7:30;
+        // moment().hour(7.5) would drop the half hour.
+        let s = blockStart(day, block);
 
         if (!showBackdate && moment().isAfter(s)) {
           return null;
         }
 
         if (find(totalClassBlackouts, blackout => {
-          if (!day.hour(block[0]).isBetween(blackout.start, blackout.end, null, '[]')) {
+          if (!moment(s).isBetween(blackout.start, blackout.end, null, '[]')) {
             return false;
           }
           // If the blackout has no hour blocks, it blocks the entire day
@@ -159,7 +148,9 @@ exports.getAvailability = function*() {
           return null;
         }
 
-        let end = moment(s).add(1, 'hour').endOf('hour');
+        // The last millisecond of the block. Seat assignment stores the same
+        // window, so the calendar and the booking agree on which seats are free.
+        let end = moment(blockEnd(day, block)).subtract(1, 'millisecond').toDate();
 
         return Seat.countAvailableSeats(s, end)
           .then(seats => {
@@ -177,8 +168,7 @@ exports.getAvailability = function*() {
                       }, {
                         cancelledOn: { $exists: false }
                       }],
-                      'times.start': { $lte: s },
-                      'times.end': { $gte: end },
+                      times: timesOverlapping(s, end),
                       classes: { $in: map(reduction.classExceptions, '_id') }
                     }).then(registrations => {
                       Object.assign(_block[_block.length - 1], {
@@ -204,8 +194,7 @@ exports.getAvailability = function*() {
                       }, {
                         cancelledOn: { $exists: false }
                       }],
-                      'times.start': { $lte: s },
-                      'times.end': { $gte: end },
+                      times: timesOverlapping(s, end),
                       classes: { $in: map(reduction.classExplicit, '_id') }
                     }).then(registrations => {
                       Object.assign(_block[_block.length - 1], {
@@ -235,7 +224,7 @@ exports.getAvailability = function*() {
         return Promise.reduce(range(7), (week, di) => {
           let day = moment(startFrom).add(w, 'week').day(di);
 
-          return findBlocks(day)
+          return AvailableTime.findBlocksOn(day)
             .then(blocks => filterBlocks(day, blocks))
             .then(fb => [ ...week, fb ]);
         }, []);
